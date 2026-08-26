@@ -18,6 +18,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - name: System libraries
+        # pyaudio has no Linux wheel and builds against portaudio.h. It arrives
+        # transitively via unitree-webrtc-connect, so every job that syncs needs it.
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq portaudio19-dev
       # Pinned to [tool.mypy]'s target: unpinned, numpy's PEP 695 stubs are
       # unparseable under python_version 3.10 and mypy dies before our code.
       - run: uv sync --all-extras --python 3.10
@@ -59,10 +63,12 @@ jobs:
         with:
           enable-cache: true
       - name: System libraries
-        # opencv and open3d need a GL runtime that the runner image lacks.
+        # opencv and open3d need a GL runtime that the runner image lacks, and
+        # pyaudio (via unitree-webrtc-connect) has no Linux wheel -- it compiles
+        # against portaudio.h.
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libgl1 libgomp1
+          sudo apt-get install -y -qq libgl1 libgomp1 portaudio19-dev
       - name: Install the workspace
         run: uv sync --all-extras --python ${{ matrix.python-version }}
       - name: Both packages import side by side

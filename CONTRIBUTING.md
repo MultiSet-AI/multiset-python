@@ -3,11 +3,15 @@
 ## Setup
 
 ```bash
+sudo apt-get install -y portaudio19-dev   # or: brew install portaudio
 git clone https://github.com/MultiSet-AI/multiset-python
 cd multiset-python
 uv sync --all-extras
 uv run pytest
 ```
+
+PortAudio is not optional: `unitree-webrtc-connect` pulls `pyaudio`, which has
+no Linux or macOS wheel and builds from source. CI installs it too.
 
 `uv sync` installs every package in `packages/` editable into one venv. Each
 adapter's `[tool.uv.sources]` points `multiset-vps` at `packages/vps` in your

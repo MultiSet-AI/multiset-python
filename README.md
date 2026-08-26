@@ -36,6 +36,10 @@ pip install \
 Both lines are required: pip does not follow a git URL to find the core, so the
 adapter's `multiset-vps>=0.1,<0.2` has to be named explicitly.
 
+The Go2 adapter needs PortAudio present first (`apt install portaudio19-dev`,
+or `brew install portaudio`): it depends on `pyaudio`, which has no Linux or
+macOS wheel. `multiset-vps` alone needs nothing.
+
 Only need poses from frames you already have? `multiset-vps` stands alone: three
 dependencies, no robot, no renderer.
 

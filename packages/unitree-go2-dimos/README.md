@@ -65,6 +65,16 @@ reverse and never serves WebRTC. `find_robots` reports both and labels them, so
 
 ## Install
 
+On Linux, install PortAudio first. `unitree-webrtc-connect` depends on
+`pyaudio`, which publishes no Linux or macOS wheel and compiles against
+`portaudio.h` — without it the install fails partway through with a C
+compiler error:
+
+```bash
+sudo apt-get install -y portaudio19-dev     # Debian/Ubuntu, incl. Jetson
+brew install portaudio                      # macOS
+```
+
 Both packages, in one command:
 
 ```bash
