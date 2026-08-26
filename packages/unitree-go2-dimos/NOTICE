@@ -1,0 +1,20 @@
+multiset-unitree-go2-dimos
+Copyright 2026 MultiSet AI Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+UNITREE GO2 ROBOT MODEL
+=======================
+
+The visualization example can display the Unitree Go2 URDF and Collada meshes
+packaged by go2_ros2_sdk (https://github.com/abizovnuralem/go2_ros2_sdk).
+
+Those files are NOT redistributed in this repository or in the built
+distribution. They are downloaded on demand, at the user's request, into a
+local cache directory. This is deliberate policy, not an implementation
+detail: it keeps third-party artwork out of this repository and out of the
+wheel. Do not vendor them.

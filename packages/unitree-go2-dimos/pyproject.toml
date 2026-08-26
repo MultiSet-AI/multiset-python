@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multiset-unitree-go2-dimos"
+dynamic = ["version"]
+description = "MultiSet VPS for the Unitree Go2: WebRTC transport, front camera, fisheye undistortion and localization."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "MultiSet AI Inc.", email = "support@multiset.ai" }]
+keywords = ["unitree", "go2", "robotics", "vps", "localization", "webrtc", "multiset"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+  "Typing :: Typed",
+]
+
+# Core: what it takes to connect, grab a frame, and localize. Nothing here
+# pulls a renderer -- see the [viz] extra for that.
+dependencies = [
+  "multiset-vps>=0.1,<0.2",
+  "unitree-webrtc-connect>=2.1.2",
+  "aiortc>=1.15",
+  "av>=13",
+  "numpy>=1.24",
+  "opencv-python>=4.10",
+]
+
+[project.optional-dependencies]
+# open3d alone is ~284 MB installed. Anyone localizing in a headless container
+# should not pay that for a viewer they will never open.
+# Used only by examples/visualize.py -- the library itself never imports these.
+# The marker is load-bearing: open3d ships no wheel past cp312, so without it
+# `[viz]` is a resolution failure on 3.13+ rather than a missing viewer.
+viz = ["open3d>=0.18; python_version < '3.13'"]
+# Fetching the per-device AES key talks to Unitree's cloud, which sits behind a
+# TLS-fingerprinting WAF that plain requests cannot pass.
+cloud = ["curl-cffi>=0.15"]
+all = ["multiset-unitree-go2-dimos[viz,cloud]"]
+
+[project.urls]
+Homepage = "https://github.com/MultiSet-AI/multiset-python"
+Issues = "https://github.com/MultiSet-AI/multiset-python/issues"
+Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/unitree-go2-dimos/CHANGELOG.md"
+
+# Short and unprefixed on purpose: there is no collision to solve on the command
+# line, and `unitree-go2-dimos-credentials` is a lot to type.
+[project.scripts]
+# One command. Fetching the AES key is a genuine one-off that needs an
+# interactive password prompt; everything else the package does is three lines
+# of Python and does not need a command of its own.
+go2-credentials = "multiset.unitree.go2.dimos.cli.credentials:main"
+
+# Resolve the core from the working tree during development. uv strips this from
+# the built wheel, which keeps the plain `multiset-vps>=0.1,<0.2` above. A git+
+# URL in [project.dependencies] could not be uploaded, so it never goes there.
+[tool.uv.sources]
+multiset-vps = { workspace = true }
+
+[tool.hatch.version]
+source = "vcs"
+raw-options.tag_regex = '^unitree-go2-dimos-v(?P<version>.+)$'
+raw-options.git_describe_command = "git describe --dirty --tags --long --match 'unitree-go2-dimos-v*'"
+raw-options.fallback_version = "0.1.0"
+
+[tool.hatch.build.targets.wheel]
+# src/multiset/ and src/multiset/unitree/ are PEP 420 namespace directories and
+# must NEVER contain an __init__.py.
+packages = ["src/multiset"]

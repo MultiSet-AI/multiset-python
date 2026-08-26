@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      # Pinned to [tool.mypy]'s target: unpinned, numpy's PEP 695 stubs are
+      # unparseable under python_version 3.10 and mypy dies before our code.
+      - run: uv sync --all-extras --python 3.10
+      - name: ruff (lint)
+        run: uv run ruff check packages
+      - name: ruff (format)
+        run: uv run ruff format --check packages
+      - name: mypy
+        # The packages are typed and ship py.typed; users get the hints, so they
+        # have to be right.
+        run: uv run mypy
+
+  namespace:
+    # The cheapest possible guard on the thing that breaks everything at once.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No __init__.py in a namespace directory
+        run: |
+          found=$(find packages/*/src/multiset \
+                       packages/*/src/multiset/unitree \
+                       packages/*/src/multiset/unitree/go2 \
+                       -maxdepth 1 -name __init__.py 2>/dev/null)
+          if [ -n "$found" ]; then
+            echo "::error::$found turns a namespace into a regular package and hides every sibling"
+            exit 1
+          fi
+          echo "clean: multiset/, multiset/unitree/ and multiset/unitree/go2/ are namespace directories"
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: System libraries
+        # opencv and open3d need a GL runtime that the runner image lacks.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libgl1 libgomp1
+      - name: Install the workspace
+        run: uv sync --all-extras --python ${{ matrix.python-version }}
+      - name: Both packages import side by side
+        # The namespace works or nothing does, and it fails at import, not at
+        # test collection -- so prove it before running anything.
+        run: uv run python -c "import multiset.vps, multiset.unitree.go2.dimos; print('namespace ok')"
+      - name: Run tests
+        # Hardware and network tests are deselected by pyproject's addopts:
+        # CI has neither a device nor MultiSet credentials.
+        run: uv run pytest -q --cov=multiset --cov-report=term-missing
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [multiset-vps, multiset-unitree-go2-dimos]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # hatch-vcs reads the tag history
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build --package ${{ matrix.package }} --out-dir dist
+      - name: Check metadata
+        run: uvx twine check dist/*
+      - name: Confirm the model is NOT vendored
+        # NOTICE promises the Unitree meshes are downloaded, never shipped. A
+        # wheel that quietly grew 25 MB of someone else's artwork would break
+        # that promise silently, so the build fails instead.
+        run: |
+          if unzip -l dist/*.whl | grep -qiE '\.(dae|stl|urdf)$'; then
+            echo "::error::robot model files found in the wheel -- see NOTICE"
+            exit 1
+          fi
+          echo "clean: no third-party model in the wheel"
+      - name: Confirm the wheel does not claim the namespace
+        run: |
+          if unzip -l dist/*.whl | grep -qE ' multiset/__init__\.py$'; then
+            echo "::error::the wheel ships multiset/__init__.py -- it would hide every sibling"
+            exit 1
+          fi
+          echo "clean: namespace not claimed"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.package }}
+          path: dist/
