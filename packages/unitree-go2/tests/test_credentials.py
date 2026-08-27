@@ -6,7 +6,7 @@ import stat
 import sys
 
 import pytest
-from multiset.unitree.go2.dimos import Credentials, save_to_env
+from multiset.unitree.go2 import Credentials, save_to_env
 
 
 def _creds() -> Credentials:

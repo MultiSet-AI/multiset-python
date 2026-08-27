@@ -1,6 +1,6 @@
 """All seven steps, ending in a picture.
 
-    pip install 'multiset-unitree-go2-dimos[viz]'
+    pip install 'multiset-unitree-go2[viz]'
     python examples/visualize.py --mesh map.glb
 
     1. read GO2_IP and the MultiSet credentials from .env
@@ -26,7 +26,7 @@ import math
 import time
 
 import numpy as np
-from multiset.unitree.go2.dimos import Go2, Go2Error, VizNotInstalled
+from multiset.unitree.go2 import Go2, Go2Error, VizNotInstalled
 
 log = logging.getLogger("visualize")
 
@@ -176,7 +176,7 @@ def main() -> int:
         *geometries,
     ]
     print(f"\nshowing {len(geometries)} geometries; close the window to exit")
-    o3d.visualization.draw_geometries(geometries, window_name="multiset-unitree-go2-dimos")
+    o3d.visualization.draw_geometries(geometries, window_name="multiset-unitree-go2")
     return 0
 
 

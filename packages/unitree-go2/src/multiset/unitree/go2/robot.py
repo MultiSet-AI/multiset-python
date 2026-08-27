@@ -2,7 +2,7 @@
 
 This is the surface most users need:
 
-    from multiset.unitree.go2.dimos import Go2
+    from multiset.unitree.go2 import Go2
 
     with Go2.from_env() as dog:
         pose = dog.localize()
@@ -271,7 +271,7 @@ def localize(
 ) -> Pose:
     """One-shot: connect, localize, disconnect.
 
-        from multiset.unitree.go2.dimos import localize
+        from multiset.unitree.go2 import localize
         pose = localize()
 
     Convenient for a script; wasteful in a loop, where the connection should be

@@ -3,7 +3,7 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "multiset-unitree-go2-dimos"
+name = "multiset-unitree-go2"
 dynamic = ["version"]
 description = "MultiSet VPS for the Unitree Go2: WebRTC transport, front camera, fisheye undistortion and localization."
 readme = "README.md"
@@ -44,20 +44,20 @@ viz = ["open3d>=0.18; python_version < '3.13'"]
 # Fetching the per-device AES key talks to Unitree's cloud, which sits behind a
 # TLS-fingerprinting WAF that plain requests cannot pass.
 cloud = ["curl-cffi>=0.15"]
-all = ["multiset-unitree-go2-dimos[viz,cloud]"]
+all = ["multiset-unitree-go2[viz,cloud]"]
 
 [project.urls]
 Homepage = "https://github.com/MultiSet-AI/multiset-python"
 Issues = "https://github.com/MultiSet-AI/multiset-python/issues"
-Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/unitree-go2-dimos/CHANGELOG.md"
+Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/unitree-go2/CHANGELOG.md"
 
 # Short and unprefixed on purpose: there is no collision to solve on the command
-# line, and `unitree-go2-dimos-credentials` is a lot to type.
+# line, and `unitree-go2-credentials` is a lot to type.
 [project.scripts]
 # One command. Fetching the AES key is a genuine one-off that needs an
 # interactive password prompt; everything else the package does is three lines
 # of Python and does not need a command of its own.
-go2-credentials = "multiset.unitree.go2.dimos.cli.credentials:main"
+go2-credentials = "multiset.unitree.go2.cli.credentials:main"
 
 # Resolve the core from the working tree during development. uv strips this from
 # the built wheel, which keeps the plain `multiset-vps>=0.1,<0.2` above. A git+
@@ -67,8 +67,8 @@ multiset-vps = { workspace = true }
 
 [tool.hatch.version]
 source = "vcs"
-raw-options.tag_regex = '^unitree-go2-dimos-v(?P<version>.+)$'
-raw-options.git_describe_command = "git describe --dirty --tags --long --match 'unitree-go2-dimos-v*'"
+raw-options.tag_regex = '^unitree-go2-v(?P<version>.+)$'
+raw-options.git_describe_command = "git describe --dirty --tags --long --match 'unitree-go2-v*'"
 raw-options.fallback_version = "0.1.0"
 
 [tool.hatch.build.targets.wheel]

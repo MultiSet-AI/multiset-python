@@ -15,7 +15,7 @@ query, the Pose and the frame conversions are identical for any camera. This
 package supplies what only it can -- the WebRTC transport, the video track, and
 this robot's measured numbers.
 
-    from multiset.unitree.go2.dimos import Go2
+    from multiset.unitree.go2 import Go2
 
     with Go2.from_env() as dog:
         pose = dog.localize()

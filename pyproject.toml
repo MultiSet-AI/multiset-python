@@ -24,7 +24,7 @@ ignore = ["B008", "SIM108"]
 
 [tool.mypy]
 python_version = "3.10"
-packages = ["multiset.vps", "multiset.unitree.go2.dimos"]
+packages = ["multiset.vps", "multiset.unitree.go2"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 
@@ -38,6 +38,6 @@ markers = [
   "network: needs internet or the MultiSet API",
 ]
 # --import-mode=importlib: a monorepo has packages/vps/tests/test_settings.py AND
-# packages/unitree-go2-dimos/tests/test_settings.py, and the legacy prepend mode
+# packages/unitree-go2/tests/test_settings.py, and the legacy prepend mode
 # imports both as the module "test_settings" and errors on the second.
 addopts = "-m 'not hardware and not network' --import-mode=importlib"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from multiset.unitree.go2.dimos import ConfigError, Go2Settings
+from multiset.unitree.go2 import ConfigError, Go2Settings
 
 
 def test_real_environment_beats_the_file(tmp_path, monkeypatch):

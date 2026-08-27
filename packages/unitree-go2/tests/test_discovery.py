@@ -7,8 +7,8 @@ than whatever happens to be on the machine's LAN.
 from __future__ import annotations
 
 import pytest
-from multiset.unitree.go2.dimos import discovery
-from multiset.unitree.go2.dimos.discovery import Host, classify, find_robots, scan_subnet
+from multiset.unitree.go2 import discovery
+from multiset.unitree.go2.discovery import Host, classify, find_robots, scan_subnet
 
 
 @pytest.fixture

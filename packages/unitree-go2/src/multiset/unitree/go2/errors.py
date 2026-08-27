@@ -54,7 +54,7 @@ class VizNotInstalled(Go2Error):
     def __init__(self) -> None:
         super().__init__(
             "the visualisation example needs the viz extra:\n"
-            "    pip install 'multiset-unitree-go2-dimos[viz]'\n"
+            "    pip install 'multiset-unitree-go2[viz]'\n"
             "It is optional because open3d alone is ~284 MB installed, and it "
             "resolves only on Python 3.10-3.12 -- on anything newer the extra "
             "installs nothing, because open3d has no wheel."

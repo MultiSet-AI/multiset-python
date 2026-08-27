@@ -1,4 +1,4 @@
-# multiset-unitree-go2-dimos
+# multiset-unitree-go2
 
 Visual positioning for the Unitree Go2: WebRTC transport, front camera, fisheye
 undistortion, and MultiSet VPS localization.
@@ -9,7 +9,7 @@ query, `Pose` and the frame conversions live in
 [`multiset-vps`](../vps/README.md) and are shared with every other device.
 
 ```python
-from multiset.unitree.go2.dimos import Go2
+from multiset.unitree.go2 import Go2
 
 with Go2.from_env() as dog:
     pose = dog.localize()
@@ -44,7 +44,7 @@ make.
 ### Finding the robot
 
 ```python
-from multiset.unitree.go2.dimos import find_robots
+from multiset.unitree.go2 import find_robots
 
 for host in find_robots():
     print(host)  # 192.168.1.114   go2   ports: 9991
@@ -80,7 +80,7 @@ Both packages, in one command:
 ```bash
 pip install \
   "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps" \
-  "multiset-unitree-go2-dimos @ git+https://github.com/MultiSet-AI/multiset-python@unitree-go2-dimos-v0.1.0#subdirectory=packages/unitree-go2-dimos"
+  "multiset-unitree-go2 @ git+https://github.com/MultiSet-AI/multiset-python@unitree-go2-v0.1.0#subdirectory=packages/unitree-go2"
 ```
 
 **Both lines are required.** pip does not follow a git URL to find this
@@ -111,7 +111,7 @@ python examples/quickstart.py
 time — `.env` is a convenience, and every value can be passed explicitly:
 
 ```python
-from multiset.unitree.go2.dimos import Go2, Go2Settings
+from multiset.unitree.go2 import Go2, Go2Settings
 from multiset.vps import VPSSettings
 
 dog = Go2(
@@ -155,7 +155,7 @@ go2-credentials --email you@example.com --save
 In Python, if you would rather not shell out:
 
 ```python
-from multiset.unitree.go2.dimos import fetch_credentials, save_to_env
+from multiset.unitree.go2 import fetch_credentials, save_to_env
 
 creds = fetch_credentials("you@example.com", password)
 save_to_env(creds[0])
@@ -186,7 +186,7 @@ Everything inherits from `Go2Error`, which inherits from
 `multiset.vps.MultisetError`. The library never calls `sys.exit()`.
 
 ```python
-from multiset.unitree.go2.dimos import Go2, Go2Error, SignallingUnavailable
+from multiset.unitree.go2 import Go2, Go2Error, SignallingUnavailable
 
 try:
     with Go2.from_env() as dog:
@@ -227,10 +227,10 @@ The transport runs an asyncio loop on a background thread.
 
 ```bash
 uv sync --all-extras
-uv run pytest packages/unitree-go2-dimos
+uv run pytest packages/unitree-go2
 ```
 
-Releases are cut by tag prefix — `unitree-go2-dimos-v0.2.1` publishes only this
+Releases are cut by tag prefix — `unitree-go2-v0.2.1` publishes only this
 package. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Licence

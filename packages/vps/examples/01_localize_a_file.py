@@ -7,7 +7,7 @@ and the pinhole intrinsics describing that exact image.
     python packages/vps/examples/01_localize_a_file.py rectified.png
 
 Where do the intrinsics come from? Whatever produced the image. If it came off a
-Go2, multiset.unitree.go2.dimos.FRONT.intrinsics is that camera's answer. If it came
+Go2, multiset.unitree.go2.FRONT.intrinsics is that camera's answer. If it came
 from your own rig, it is your calibration's rectified set -- and it must describe
 the image AFTER undistortion, not the raw sensor.
 """

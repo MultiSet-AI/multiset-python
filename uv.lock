@@ -19,7 +19,7 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "multiset-unitree-go2-dimos",
+    "multiset-unitree-go2",
     "multiset-vps",
 ]
 
@@ -1805,8 +1805,8 @@ wheels = [
 ]
 
 [[package]]
-name = "multiset-unitree-go2-dimos"
-source = { editable = "packages/unitree-go2-dimos" }
+name = "multiset-unitree-go2"
+source = { editable = "packages/unitree-go2" }
 dependencies = [
     { name = "aiortc" },
     { name = "av" },

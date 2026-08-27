@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 
 import pytest
-from multiset.unitree.go2.dimos import compose_map_from_odom
+from multiset.unitree.go2 import compose_map_from_odom
 
 
 def test_at_the_anchor_the_fix_is_reproduced_exactly():

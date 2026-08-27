@@ -22,7 +22,7 @@ Prove the namespace resolves before anything else. It is the failure that looks
 like nothing else:
 
 ```bash
-uv run python -c "import multiset.vps, multiset.unitree.go2.dimos; print('ok')"
+uv run python -c "import multiset.vps, multiset.unitree.go2; print('ok')"
 ```
 
 ## Before you open a PR
@@ -37,14 +37,14 @@ CI runs all of it on Python 3.10–3.12.
 
 ## The namespace rule
 
-`src/multiset/`, `src/multiset/unitree/` and `src/multiset/unitree/go2/` are
-PEP 420 namespace directories, shared across distributions.
+`src/multiset/` and `src/multiset/unitree/` are PEP 420 namespace
+directories, shared across distributions.
 
-> **Never create an `__init__.py` in any of them.**
+> **Never create an `__init__.py` in either of them.**
 
 One `__init__.py` turns the namespace into a regular package owned by whichever
 distribution shipped it, and every *sibling* `multiset.*` package becomes
-invisible — `import multiset.vps` succeeds, `import multiset.unitree.go2.dimos`
+invisible — `import multiset.vps` succeeds, `import multiset.unitree.go2`
 raises `ModuleNotFoundError`, and nothing in the traceback points at the cause.
 A CI job and `packages/vps/tests/test_namespace.py` both guard it. Leave them
 alone.
@@ -62,7 +62,7 @@ in the wrong package. Moving a file between packages is a `git mv` and a PR here
 in separate repos it would be two releases and a version bump.
 
 Never import an adapter from the core. `multiset.vps` must not know that
-`multiset.unitree.go2.dimos` exists.
+`multiset.unitree.go2` exists.
 
 ## The layering rule
 
@@ -120,7 +120,7 @@ don't "optimise" that by checking them in.
 - Add your entry under `## [Unreleased]` in that package's `CHANGELOG.md` in the
   same PR.
 - Releases are SemVer per package, tagged `<package>-v<X.Y.Z>`:
-  `vps-v0.1.1`, `unitree-go2-dimos-v0.2.0`. The tag prefix is what routes the
+  `vps-v0.1.1`, `unitree-go2-v0.2.0`. The tag prefix is what routes the
   release workflow, and `hatch-vcs` reads the version from it — there is no
   hand-edited version constant anywhere.
 - While on `0.x`, minor versions may break the API. Say so in the changelog.

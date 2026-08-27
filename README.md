@@ -6,13 +6,13 @@ device-agnostic VPS core, and one adapter per robot or camera.
 | package | `import` | what it owns |
 |---|---|---|
 | [`multiset-vps`](packages/vps/) | `multiset.vps` | VPS client, `Pose`, frame conventions, rectification |
-| [`multiset-unitree-go2-dimos`](packages/unitree-go2-dimos/) | `multiset.unitree.go2.dimos` | WebRTC transport, front camera, discovery, Go2 calibration |
+| [`multiset-unitree-go2`](packages/unitree-go2/) | `multiset.unitree.go2` | WebRTC transport, front camera, discovery, Go2 calibration |
 
 One mapping rule, no exceptions: **every hyphen after `multiset` becomes a
-dot.** `multiset-unitree-go2-dimos` → `multiset.unitree.go2.dimos`.
+dot.** `multiset-unitree-go2` → `multiset.unitree.go2`.
 
 ```python
-from multiset.unitree.go2.dimos import Go2
+from multiset.unitree.go2 import Go2
 from multiset.vps import localize
 
 with Go2.from_env() as dog:
@@ -30,7 +30,7 @@ Both packages, in one command:
 ```bash
 pip install \
   "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps" \
-  "multiset-unitree-go2-dimos @ git+https://github.com/MultiSet-AI/multiset-python@unitree-go2-dimos-v0.1.0#subdirectory=packages/unitree-go2-dimos"
+  "multiset-unitree-go2 @ git+https://github.com/MultiSet-AI/multiset-python@unitree-go2-v0.1.0#subdirectory=packages/unitree-go2"
 ```
 
 Both lines are required: pip does not follow a git URL to find the core, so the
@@ -69,14 +69,14 @@ multiset-python
 ├─ pyproject.toml            uv workspace + lint/type/test config
 ├─ packages/                 one directory per distribution, each with examples/
 │  ├─ vps/                   multiset-vps
-│  └─ unitree-go2-dimos/     multiset-unitree-go2-dimos
+│  └─ unitree-go2/     multiset-unitree-go2
 ├─ docs/frames.md            the conversions that are silent when wrong
 └─ .github/workflows/  ci.yml · release.yml
 ```
 
-`src/multiset/`, `src/multiset/unitree/` and `src/multiset/unitree/go2/` are
-PEP 420 namespace directories. **None of them may ever contain an
-`__init__.py`** — one does, and every sibling `multiset.*` distribution becomes
+`src/multiset/` and `src/multiset/unitree/` are PEP 420 namespace directories.
+**Neither may ever contain an `__init__.py`** — one does, and every sibling
+`multiset.*` distribution becomes
 unimportable with a `ModuleNotFoundError` that points nowhere near the cause. CI
 and a unit test both guard it.
 
@@ -86,7 +86,7 @@ and a unit test both guard it.
 git clone https://github.com/MultiSet-AI/multiset-python
 cd multiset-python
 uv sync --all-extras                          # every package editable, one venv
-uv run python -c "import multiset.vps, multiset.unitree.go2.dimos; print('ok')"
+uv run python -c "import multiset.vps, multiset.unitree.go2; print('ok')"
 uv run pytest
 ```
 
@@ -103,7 +103,7 @@ Each package versions independently. Releases are driven entirely by **tag
 prefix**:
 
 ```bash
-git tag unitree-go2-dimos-v0.2.1 && git push --tags   # publishes only that package
+git tag unitree-go2-v0.2.1 && git push --tags   # publishes only that package
 git tag vps-v0.1.1 && git push --tags                 # publishes only the core
 ```
 

@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 import pytest
-from multiset.unitree.go2.dimos import YUP_TO_ZUP, camera_pose_to_base
+from multiset.unitree.go2 import YUP_TO_ZUP, camera_pose_to_base
 
 
 def test_yup_to_zup_maps_axes_as_documented():

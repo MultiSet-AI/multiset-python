@@ -10,7 +10,7 @@ answers: "the board is up, the robot is not" beats a bare "nothing found".
 import argparse
 import logging
 
-from multiset.unitree.go2.dimos import find_robots
+from multiset.unitree.go2 import find_robots
 
 
 def main() -> int:

@@ -8,7 +8,7 @@ Needs .env with GO2_IP, GO2_AES_KEY and the three MULTISET_* values.
 import logging
 import math
 
-from multiset.unitree.go2.dimos import Go2, camera_pose_to_base
+from multiset.unitree.go2 import Go2, camera_pose_to_base
 from multiset.vps import MultisetError
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")

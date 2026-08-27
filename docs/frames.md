@@ -28,7 +28,7 @@ the mount chain, and the camera frame is ARKit-style (+Y up, −Z forward) where
 the Go2's mount chain is OpenCV optical (+Y down, +Z forward).
 
 ```python
-from multiset.unitree.go2.dimos import camera_pose_to_base
+from multiset.unitree.go2 import camera_pose_to_base
 T_base = camera_pose_to_base(pose.matrix)
 ```
 
@@ -69,7 +69,7 @@ Odometry starts wherever the robot booted. It has no relationship to the map
 until you anchor it to a VPS fix:
 
 ```python
-from multiset.unitree.go2.dimos import compose_map_from_odom
+from multiset.unitree.go2 import compose_map_from_odom
 x, y, yaw = compose_map_from_odom(anchor_map, anchor_odom, odom_now)
 ```
 

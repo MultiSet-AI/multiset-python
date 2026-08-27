@@ -57,7 +57,7 @@ def fetch_credentials(
     Pass `serial` to get just that robot. Raises ConfigError if the account has
     no robots, or the requested serial is not bound to it.
 
-    Needs the `cloud` extra:  pip install 'multiset-unitree-go2-dimos[cloud]'
+    Needs the `cloud` extra:  pip install 'multiset-unitree-go2[cloud]'
     """
     if region not in REGIONS:
         # Upstream accepts 'cn', not 'china'; catching it here beats failing
@@ -69,7 +69,7 @@ def fetch_credentials(
     except ImportError as exc:  # pragma: no cover - depends on install extras
         raise Go2Error(
             "fetching the AES key needs the cloud extra:\n"
-            "    pip install 'multiset-unitree-go2-dimos[cloud]'"
+            "    pip install 'multiset-unitree-go2[cloud]'"
         ) from exc
 
     cloud = UnitreeCloud(region=region, device_type="Go2")

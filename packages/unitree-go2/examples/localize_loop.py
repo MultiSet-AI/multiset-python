@@ -10,7 +10,7 @@ import argparse
 import logging
 import time
 
-from multiset.unitree.go2.dimos import Go2
+from multiset.unitree.go2 import Go2
 from multiset.vps import MultisetError
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")

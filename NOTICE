@@ -10,7 +10,7 @@ You may obtain a copy of the License at
 UNITREE GO2 ROBOT MODEL
 =======================
 
-The visualization example in packages/unitree-go2-dimos can display the Unitree
+The visualization example in packages/unitree-go2 can display the Unitree
 Go2 URDF and Collada meshes packaged by go2_ros2_sdk
 (https://github.com/abizovnuralem/go2_ros2_sdk).
 

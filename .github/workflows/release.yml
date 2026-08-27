@@ -1,8 +1,8 @@
-# Releases are driven entirely by tag prefix. `git tag unitree-go2-dimos-v0.2.1`
-# publishes multiset-unitree-go2-dimos and touches nothing else.
+# Releases are driven entirely by tag prefix. `git tag unitree-go2-v0.2.1`
+# publishes multiset-unitree-go2 and touches nothing else.
 #
 #   vps-v0.1.0                -> packages/vps                -> multiset-vps
-#   unitree-go2-dimos-v0.1.0  -> packages/unitree-go2-dimos   -> multiset-unitree-go2-dimos
+#   unitree-go2-v0.1.0  -> packages/unitree-go2   -> multiset-unitree-go2
 #
 # PyPI publishing is staged behind PUBLISH_TO_PYPI: while the packages are
 # installed from git URLs this job builds and attaches artifacts to the GitHub
@@ -29,10 +29,10 @@ jobs:
       - name: Resolve the package from the tag
         id: pkg
         run: |
-          DIR="${GITHUB_REF_NAME%%-v*}"                 # unitree-go2-dimos-v0.2.1 -> unitree-go2-dimos
+          DIR="${GITHUB_REF_NAME%%-v*}"                 # unitree-go2-v0.2.1 -> unitree-go2
           case "$DIR" in
             vps)         NAME=multiset-vps ;;
-            unitree-go2-dimos) NAME=multiset-unitree-go2-dimos ;;
+            unitree-go2) NAME=multiset-unitree-go2 ;;
             *) echo "::error::unknown tag prefix '$DIR'"; exit 1 ;;
           esac
           echo "dir=$DIR"   >> "$GITHUB_OUTPUT"

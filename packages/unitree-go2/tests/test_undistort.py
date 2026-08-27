@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from multiset.unitree.go2.dimos import FRONT, GO2_FRONT_720P
+from multiset.unitree.go2 import FRONT, GO2_FRONT_720P
 from multiset.vps import CalibrationError, Rectifier
 
 

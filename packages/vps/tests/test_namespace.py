@@ -2,7 +2,7 @@
 
 An __init__.py anywhere in a namespace directory turns it into a regular package
 and makes every SIBLING distribution invisible -- multiset.vps installed, then
-`import multiset.unitree.go2.dimos` raises ModuleNotFoundError with nothing in
+`import multiset.unitree.go2` raises ModuleNotFoundError with nothing in
 the traceback pointing at the cause. Cheap to prevent, miserable to debug.
 """
 
@@ -17,7 +17,6 @@ REPO = Path(__file__).resolve().parents[3]
 NAMESPACE_DIRS = (
     "packages/*/src/multiset",
     "packages/*/src/multiset/unitree",
-    "packages/*/src/multiset/unitree/go2",
 )
 
 

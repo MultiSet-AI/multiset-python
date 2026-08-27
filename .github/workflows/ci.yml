@@ -43,13 +43,12 @@ jobs:
         run: |
           found=$(find packages/*/src/multiset \
                        packages/*/src/multiset/unitree \
-                       packages/*/src/multiset/unitree/go2 \
                        -maxdepth 1 -name __init__.py 2>/dev/null)
           if [ -n "$found" ]; then
             echo "::error::$found turns a namespace into a regular package and hides every sibling"
             exit 1
           fi
-          echo "clean: multiset/, multiset/unitree/ and multiset/unitree/go2/ are namespace directories"
+          echo "clean: multiset/ and multiset/unitree/ are namespace directories"
 
   test:
     runs-on: ubuntu-latest
@@ -74,7 +73,7 @@ jobs:
       - name: Both packages import side by side
         # The namespace works or nothing does, and it fails at import, not at
         # test collection -- so prove it before running anything.
-        run: uv run python -c "import multiset.vps, multiset.unitree.go2.dimos; print('namespace ok')"
+        run: uv run python -c "import multiset.vps, multiset.unitree.go2; print('namespace ok')"
       - name: Run tests
         # Hardware and network tests are deselected by pyproject's addopts:
         # CI has neither a device nor MultiSet credentials.
@@ -84,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [multiset-vps, multiset-unitree-go2-dimos]
+        package: [multiset-vps, multiset-unitree-go2]
     steps:
       - uses: actions/checkout@v4
         with:
