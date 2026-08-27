@@ -76,8 +76,7 @@ from multiset.vps import PinholeIntrinsics, localize_image
 image = cv2.imread("photo.png")
 
 # the four numbers describing your lens, for THIS image size
-K = PinholeIntrinsics(fx=728.47, fy=727.57, px=646.64, py=346.46,
-                      width=1280, height=720)
+K = PinholeIntrinsics(fx=728.47, fy=727.57, px=646.64, py=346.46, width=1280, height=720)
 
 pose = localize_image(image, K)
 
@@ -112,14 +111,14 @@ method and `localize()` takes it directly:
 ```python
 from multiset.vps import localize
 
-pose = localize(my_camera)      # my_camera.capture() -> Frame
+pose = localize(my_camera)  # my_camera.capture() -> Frame
 ```
 
 That one method is the entire contract:
 
 ```python
 class FrameSource(Protocol):
-    def capture(self) -> Frame: ...     # Frame = (image, intrinsics)
+    def capture(self) -> Frame: ...  # Frame = (image, intrinsics)
 ```
 
 It is how [`multiset-unitree-go2`](../unitree-go2/README.md) plugs in, and how
@@ -146,13 +145,17 @@ from multiset.vps import FisheyeCalibration, Rectifier
 
 calib = FisheyeCalibration(
     name="my-lens-1280x720",
-    fx=797.47, fy=796.48, cx=643.53, cy=349.27,
+    fx=797.47,
+    fy=796.48,
+    cx=643.53,
+    cy=349.27,
     k=(-0.0731, -0.0234, -0.0069, 0.0092),
-    width=1280, height=720,
+    width=1280,
+    height=720,
 )
 
-rect = Rectifier(calib)          # remap tables built once, then cached
-image, K = rect.undistort(raw)   # the flat image AND its new numbers
+rect = Rectifier(calib)  # remap tables built once, then cached
+image, K = rect.undistort(raw)  # the flat image AND its new numbers
 pose = localize_image(image, K)
 ```
 
