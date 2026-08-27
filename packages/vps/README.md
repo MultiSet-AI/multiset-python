@@ -1,147 +1,193 @@
 # multiset-vps
 
-MultiSet visual positioning, independent of what took the picture. A rectified
-frame and the intrinsics describing it go in; a `Pose` comes out.
+### One picture in, a position out.
 
-Standalone: it needs no camera, no device and no hardware. Anything that can
-produce a rectified image and its intrinsics can be localized.
+Part of [multiset-python](../../README.md). This is the **core**: every device
+adapter is built on it, and it knows nothing about any particular camera. For the
+Unitree Go2, see [`multiset-unitree-go2`](../unitree-go2/README.md).
 
-```python
-from multiset.vps import PinholeIntrinsics, localize_image
-import cv2
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../docs/img/vps-dark.svg">
+  <img src="../../docs/img/vps-light.svg" alt="A picture you already have, plus your lens numbers, is matched against your map by MultiSet VPS, and the place it was taken appears in the point cloud." width="100%">
+</picture>
 
-image = cv2.imread("rectified.png")
-K = PinholeIntrinsics(fx=728.47, fy=727.57, px=646.64, py=346.46, width=1280, height=720)
+**What it is for.** You have a photograph of somewhere you have already mapped
+with MultiSet, and you want to know where it was taken from.
 
-pose = localize_image(image, K)
-if pose:
-    print(pose.x, pose.y, pose.yaw_deg, pose.confidence)
-```
+**What you give it.** The image, plus the four numbers that describe your lens
+(`fx`, `fy`, `px`, `py`). If your lens is a fisheye, this package will
+straighten the picture first and work out the corrected numbers for you.
+
+**What you get back.** A `Pose`: `x`, `y`, `z`, a heading in degrees, and a
+confidence. A picture the map cannot place is a normal answer — the `Pose` comes
+back empty and falsey, so `if pose:` is the whole check. Exceptions are reserved
+for things that are actually broken.
+
+**What it needs.** numpy, opencv-python, requests. No camera, no device, no
+hardware, no robot.
+
+### Where your code stops and ours starts
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../docs/img/vps-modules-dark.svg">
+  <img src="../../docs/img/vps-modules-light.svg" alt="Your code supplies an image and lens numbers; multiset-vps rectifies it and calls the MultiSet API; a Pose comes back to your code." width="100%">
+</picture>
+
+You bring the picture and the lens numbers. Everything between that and a `Pose`
+— straightening the image, the auth token, the request, parsing the reply — is
+this package's job.
 
 ---
 
-## Install
+# Getting started
+
+Three steps. About five minutes.
+
+## 1 · Install it
 
 ```bash
 pip install "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps"
 ```
 
-Three dependencies — numpy, opencv-python, requests.
+Nothing else to install first — numpy, opencv-python and requests come with it.
 
-## Configure
+## 2 · Get your credentials
 
-Get the three values from the [MultiSet Developer Platform](https://developer.multiset.ai):
-sign up, create a map for its **map code**, then copy your **client ID** and
-**client secret**. API reference at [docs.multiset.ai](https://docs.multiset.ai).
+Sign up at the [MultiSet Developer Platform](https://developer.multiset.ai),
+create a map, and you will have three values:
 
-Copy [`.env.example`](../../.env.example) to `.env` and fill in the MultiSet
-section: `MULTISET_CLIENT_ID`, `MULTISET_CLIENT_SECRET`, `MULTISET_MAP_CODE`.
+| | |
+|---|---|
+| `MULTISET_CLIENT_ID` | identifies your account |
+| `MULTISET_CLIENT_SECRET` | the password for it |
+| `MULTISET_MAP_CODE` | which map to search, like `MAP_XXXXXXXXXX` |
 
-Nothing is read at import time. `.env` is a convenience — every value can be
-passed explicitly instead, and explicit always wins:
+Copy [`.env.example`](../../.env.example) to `.env` next to your script and paste
+them in. That is all the setup there is.
 
-```python
-from multiset.vps import VPSSettings, VPSClient
+## 3 · Localize a picture
 
-client = VPSClient(VPSSettings(client_id="…", client_secret="…", map_code="MAP_…"))
-```
-
-These credentials belong to your MultiSet **account**, not to any one device,
-which is why they live here rather than in a device's settings object. A
-capture-only script should not have to supply a map code it never uses.
-
-## Two ways in
-
-**You have a frame already** — a video file, a dataset on disk, an upload:
+Take a photo somewhere inside your map, then:
 
 ```python
-from multiset.vps import localize_image
+import cv2
+from multiset.vps import PinholeIntrinsics, localize_image
 
-pose = localize_image(image, intrinsics)
+image = cv2.imread("photo.png")
+
+# the four numbers describing your lens, for THIS image size
+K = PinholeIntrinsics(fx=728.47, fy=727.57, px=646.64, py=346.46,
+                      width=1280, height=720)
+
+pose = localize_image(image, K)
+
+if pose:
+    print(f"x={pose.x:.2f}  y={pose.y:.2f}  facing {pose.yaw_deg:.0f}°")
+else:
+    print("the map did not recognise this picture")
 ```
 
-**You have a device** — anything satisfying the `FrameSource` protocol:
+`if pose:` is the whole check. A picture the map cannot place is a normal answer,
+not an error — you get a `Pose` that is simply empty.
+
+**Where do the four numbers come from?** Whatever took the picture. Your phone or
+camera SDK reports them, or you measure them once with a calibration board. If
+your lens is a fisheye, see [straightening a fisheye](#straightening-a-fisheye)
+below — you must not use raw fisheye numbers here.
+
+There is a runnable version of exactly this in
+[`examples/01_localize_a_file.py`](examples/01_localize_a_file.py).
+
+---
+
+# Going further
+
+Nothing below is needed to get your first pose.
+
+## Localizing from a live camera
+
+If you have something that produces frames continuously, give it a `capture()`
+method and `localize()` takes it directly:
 
 ```python
 from multiset.vps import localize
 
-pose = localize(source)  # source.capture() -> Frame
+pose = localize(my_camera)      # my_camera.capture() -> Frame
 ```
 
-`FrameSource` is one method:
+That one method is the entire contract:
 
 ```python
 class FrameSource(Protocol):
-    def capture(self) -> Frame: ...  # Frame = (image, intrinsics)
+    def capture(self) -> Frame: ...     # Frame = (image, intrinsics)
 ```
 
-That is the entire contract. In a
-loop, build the client once and pass it — it holds the cached auth token, and a
-fresh client per query is a token request per query:
+It is how [`multiset-unitree-go2`](../unitree-go2/README.md) plugs in, and how
+you would add your own camera.
+
+**In a loop, build the client once** — it caches the auth token, so a fresh
+client per query means a token request per query:
 
 ```python
+from multiset.vps import VPSClient, localize
+
 client = VPSClient()
 while True:
-    pose = localize(source, client=client)
+    pose = localize(my_camera, client=client)
 ```
 
-## Frames — read this before trusting a pose
+## Straightening a fisheye
 
-Three conversions that are silent when wrong. Getting one backwards produces a
-plausible-looking result rather than an error, which is why each has exactly one
-implementation and it lives here:
-
-- **VPS returns Y-up.** Odometry, costmaps and viewers are Z-up. `YUP_TO_ZUP`
-  handles it.
-- **VPS returns an ARKit-style camera frame** (+Y up, −Z forward); mount chains
-  are written in OpenCV optical (+Y down, +Z forward). `CAM_TO_OPTICAL`.
-- **A VPS pose describes the *camera*, not the thing carrying it.** Give
-  `camera_pose_to_origin()` the device's `Mount` and it returns the carrier's
-  pose. On a typical mount the two differ by **tens of centimetres and often 90° of
-  heading** — and the wrong one looks perfectly plausible in a screenshot.
-
-Plus the one that is not a frame conversion but fails the same way:
-
-- **Raw and rectified intrinsics are not interchangeable.** A fisheye
-  calibration describes the *sensor*; a `PinholeIntrinsics` describes the image
-  after remapping — commonly a ~10% difference.
-  bearing — and VPS still answers `poseFound: true`.
-
-`Rectifier.undistort()` returns the image and its intrinsics **as a pair**, and
-nothing in this package accepts one without the other. See
-[docs/frames.md](../../docs/frames.md).
-
-## Rectification
-
-The machinery is here; the numbers live in the device packages, next to the
-hardware they describe.
+VPS needs a flat, pinhole-style picture. A fisheye frame means nothing
+geometrically until it is remapped, so do that first:
 
 ```python
 from multiset.vps import FisheyeCalibration, Rectifier
 
 calib = FisheyeCalibration(
     name="my-lens-1280x720",
-    fx=797.47,
-    fy=796.48,
-    cx=643.53,
-    cy=349.27,
+    fx=797.47, fy=796.48, cx=643.53, cy=349.27,
     k=(-0.0731, -0.0234, -0.0069, 0.0092),
-    width=1280,
-    height=720,
+    width=1280, height=720,
 )
-rect = Rectifier(calib)  # remap tables built once, cached
-image, K = rect.undistort(raw)
+
+rect = Rectifier(calib)          # remap tables built once, then cached
+image, K = rect.undistort(raw)   # the flat image AND its new numbers
+pose = localize_image(image, K)
 ```
 
-The resolution is part of the calibration on purpose: these coefficients
-describe one sensor at one readout, and applying them to a resized frame yields
-a plausible picture with wrong geometry. `undistort()` raises
-`CalibrationError` rather than letting that through.
+`undistort()` hands back the image **and** its intrinsics together, because they
+are only valid as a pair. The resolution is part of the calibration on purpose:
+these coefficients describe one sensor at one readout size, and applying them to
+a resized frame gives you a plausible picture with wrong geometry.
+`undistort()` raises `CalibrationError` rather than let that through.
+
+## Three things that go wrong silently
+
+Each of these produces a believable answer instead of an error, which is exactly
+what makes them expensive. Each has one implementation, and it lives here.
+
+**Raw and rectified numbers are not interchangeable.** A fisheye calibration
+describes the *sensor*; `PinholeIntrinsics` describes the image *after*
+remapping. They differ by roughly 10%. Send raw numbers with a straightened
+image and every bearing is ~10% out — and VPS still answers `poseFound: true`.
+
+**VPS answers Y-up; your map is probably Z-up.** Odometry, costmaps and viewers
+are Z-up. `YUP_TO_ZUP` converts.
+
+**A pose describes the camera, not the robot carrying it.** Hand
+`camera_pose_to_origin()` your device's `Mount` and you get the carrier's pose
+instead — it applies `YUP_TO_ZUP` and `CAM_TO_OPTICAL` (VPS reports an
+ARKit-style camera frame; mounts are written in OpenCV optical) for you. On a
+typical mount the two poses differ by tens of centimetres and often 90° of
+heading — and the wrong one looks perfectly fine in a screenshot.
+
+The long version, with the maths, is in [docs/frames.md](../../docs/frames.md).
 
 ## Errors
 
-`MultisetError` is the root for **every** package in the family, so one except
-clause covers this package and every device alongside it.
+`MultisetError` is the root for every package in the family, so one `except`
+covers this package and every device beside it.
 
 ```
 MultisetError
@@ -153,17 +199,22 @@ MultisetError
    └─ VPSAuthError     # check MULTISET_CLIENT_ID / _SECRET
 ```
 
-The library never calls `sys.exit()`.
+This library never calls `sys.exit()`, and an unrecognised picture is not an
+error — check `if pose:`.
 
-**`poseFound=false` is not an error.** A featureless wall legitimately fails to
-match, so a query returns a `Pose` with `found=False` rather than raising. Check
-`if pose:`.
+## Passing settings explicitly
 
-## Examples
+`.env` is a convenience, not a requirement. Nothing is read at import time, and
+an explicit value always wins:
 
-| file | |
-|---|---|
-| [`examples/01_localize_a_file.py`](examples/01_localize_a_file.py) | no device at all — localize an image on disk |
+```python
+from multiset.vps import VPSClient, VPSSettings
+
+client = VPSClient(VPSSettings(client_id="…", client_secret="…", map_code="MAP_…"))
+```
+
+These credentials belong to your MultiSet **account**, not to any one device —
+which is why they live here rather than in a robot's settings.
 
 ## Licence
 

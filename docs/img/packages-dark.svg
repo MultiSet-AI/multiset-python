@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 210" width="880" height="210" role="img"
+     aria-label="multiset-unitree-go2 or your own camera code supply a frame; multiset-vps turns it into a pose.">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B870F0" fill-opacity=".65"/>
+    </marker>
+  </defs>
+  <style>
+    .box  { fill:#B870F0; fill-opacity:.10; stroke:#B870F0; stroke-opacity:.42; stroke-width:1.5 }
+    .core { fill:#B870F0; fill-opacity:.18; stroke:#B870F0; stroke-opacity:.80; stroke-width:2 }
+    .t    { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size:15px; font-weight:600; fill:#EBDCF9 }
+    .s    { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size:12.5px; fill:#C98CF4; fill-opacity:1 }
+    .lbl  { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:11px; fill:#C98CF4; fill-opacity:1 }
+    .arw  { stroke:#B870F0; stroke-opacity:.65; stroke-width:1.5; fill:none }
+    .rail { stroke:#B870F0; stroke-opacity:.16; stroke-width:1.5; fill:none; stroke-dasharray:3 5 }
+    .dot  { fill:#D9B8FA; fill-opacity:.95 }
+  </style>
+  <rect class="box" x="10" y="12" width="232" height="72" rx="10"/>
+  <text class="t" x="126" y="42" text-anchor="middle">multiset-unitree-go2</text>
+  <text class="s" x="126" y="64" text-anchor="middle">talks to the robot</text>
+
+  <rect class="box" x="10" y="126" width="232" height="72" rx="10"/>
+  <text class="t" x="126" y="156" text-anchor="middle">your own camera code</text>
+  <text class="s" x="126" y="178" text-anchor="middle">a file, a rig, a dataset</text>
+
+  <path class="arw" d="M 242 48 H 300 V 105 H 368" marker-end="url(#a)"/>
+  <path class="arw" d="M 242 162 H 300 V 105 H 368" marker-end="url(#a)"/>
+  <text class="lbl" x="312" y="124" text-anchor="middle">capture() -&gt; Frame</text>
+
+  <rect class="core" x="376" y="65" width="228" height="80" rx="10"/>
+  <text class="t" x="490" y="97" text-anchor="middle">multiset-vps</text>
+  <text class="s" x="490" y="119" text-anchor="middle">the core: frame in, pose out</text>
+
+  <path class="arw" d="M 604 105 H 650" marker-end="url(#a)"/>
+
+  <rect class="box" x="654" y="65" width="216" height="80" rx="10"/>
+  <text class="t" x="762" y="97" text-anchor="middle">Pose</text>
+  <text class="s" x="762" y="119" text-anchor="middle">x, y, heading, confidence</text>
+</svg>

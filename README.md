@@ -1,88 +1,115 @@
-<a href="https://multiset.ai"><img src="docs/img/multiset-logo.png" alt="MultiSet" height="56"></a>
+<a href="https://multiset.ai"><img src="docs/img/multiset-logo.png" alt="MultiSet" height="52"></a>
 
 # multiset-python
 
-MultiSet visual positioning for Python. One repo, several packages: a
-device-agnostic VPS core, and one adapter per robot or camera.
+**The MultiSet Python SDKs.** Work out where a camera is from a single picture,
+anywhere you have already mapped with MultiSet.
+
+No GPS, no markers on the walls, no beacons, no extra hardware. You send a
+photo; you get back where it was taken and which way the camera was facing.
 
 [Developer Platform](https://developer.multiset.ai) ·
 [Docs](https://docs.multiset.ai) ·
 [multiset.ai](https://multiset.ai)
 
-| package | `import` | what it owns |
-|---|---|---|
-| [`multiset-vps`](packages/vps/) | `multiset.vps` | VPS client, `Pose`, frame conventions, rectification |
-| [`multiset-unitree-go2`](packages/unitree-go2/) | `multiset.unitree.go2` | WebRTC transport, front camera, discovery, Go2 calibration |
+That is useful wherever GPS cannot reach — indoors, underground, in a warehouse.
+It is how you snap a drifting robot back onto the truth, how a machine that has
+just booted works out where it is, and how you record where something you
+photographed actually stands.
 
-One mapping rule, no exceptions: **every hyphen after `multiset` becomes a
-dot.** `multiset-unitree-go2` → `multiset.unitree.go2`.
+**You will need a MultiSet account first.** Sign up at the
+[Developer Platform](https://developer.multiset.ai), create a map, and keep your
+**client ID**, **client secret** and **map code** to hand — each package README
+shows where they go.
+
+---
+
+# The packages
+
+| | package | install as | import as |
+|---|---|---|---|
+| **1** | [the core](packages/vps/README.md) | `multiset-vps` | `multiset.vps` |
+| **2** | [Unitree Go2](packages/unitree-go2/README.md) | `multiset-unitree-go2` | `multiset.unitree.go2` |
+
+More adapters will land alongside these. The core never changes when they do.
+
+## 1 · `multiset-vps` — positioning, for any camera
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/vps-dark.svg">
+  <img src="docs/img/vps-light.svg" alt="A picture you already have, plus your lens numbers, is matched against your map by MultiSet VPS, and the place it was taken appears in the point cloud." width="100%">
+</picture>
+
+**What it is for.** Turning a picture into a position. This is the whole product
+in one function call.
+
+**What you give it.** An image, and the four numbers that describe your lens.
+Nothing else. It has never heard of robots.
+
+**What you get back.** A `Pose` — `x`, `y`, `z`, a heading, and a confidence. If
+the map does not recognise the picture, you get a `Pose` that is simply empty,
+not an exception.
+
+```python
+from multiset.vps import localize_image
+
+pose = localize_image(image, my_lens_numbers)
+if pose:
+    print(pose.x, pose.y, pose.yaw_deg)
+```
+
+Three dependencies, no hardware.
+
+**Everything else — installing it, configuring it, worked examples, the frame
+conventions and the full API — is in
+[packages/vps/README.md](packages/vps/README.md).**
+
+## 2 · `multiset-unitree-go2` — for the Unitree Go2
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/go2-dark.svg">
+  <img src="docs/img/go2-light.svg" alt="A Unitree Go2 photographs the room over WebRTC; MultiSet VPS matches the frame against your map; the robot's position appears inside the point cloud." width="100%">
+</picture>
+
+**What it is for.** Getting that same position out of a Unitree Go2, without you
+writing any of the hard parts.
+
+**What it does for you.** Finds the robot on your network, connects over WebRTC,
+pulls a frame from the front camera, straightens out the fisheye using this
+robot's own measured calibration, and localizes it.
+
+**What you get back.** The same `Pose` — plus `dog.base_pose()` if you want the
+robot's position rather than the lens's.
 
 ```python
 from multiset.unitree.go2 import Go2
-from multiset.vps import localize
 
 with Go2.from_env() as dog:
-    pose = localize(dog)                 # the same call for every device
+    pose = dog.localize()
     if pose:
         print(pose.x, pose.y, pose.yaw_deg, pose.confidence)
 ```
 
+Builds on the core.
+
+**Everything else — installing it, finding the robot, the AES key, the seven
+steps and the things that will cost you an afternoon — is in
+[packages/unitree-go2/README.md](packages/unitree-go2/README.md).**
+
 ---
 
-## Install
-
-**Only need poses from images you already have?** `multiset-vps` stands alone —
-three dependencies, no robot, no renderer, nothing to install first:
-
-```bash
-pip install "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps"
-```
-
-**Working with a Unitree Go2?** Install PortAudio first — the adapter depends on
-`pyaudio`, which has no Linux or macOS wheel and builds from source:
-
-```bash
-sudo apt-get install -y portaudio19-dev     # Debian/Ubuntu, incl. Jetson
-brew install portaudio                      # macOS
-```
-
-Then both packages, in one command:
-
-```bash
-pip install \
-  "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps" \
-  "multiset-unitree-go2 @ git+https://github.com/MultiSet-AI/multiset-python@unitree-go2-v0.1.0#subdirectory=packages/unitree-go2"
-```
-
-Both lines are required: pip does not follow a git URL to find the core, so the
-adapter's `multiset-vps>=0.1,<0.2` has to be named explicitly.
-
-## Getting credentials
-
-You need a MultiSet account and a map before any of this returns a pose.
-
-1. Sign up at the [Developer Platform](https://developer.multiset.ai)
-2. Create a map — you get a **map code** like `MAP_XXXXXXXXXX`
-3. Copy your **client ID** and **client secret**
-
-Put all three in `.env` (see [.env.example](.env.example)):
-
-```bash
-MULTISET_CLIENT_ID=...
-MULTISET_CLIENT_SECRET=...
-MULTISET_MAP_CODE=MAP_XXXXXXXXXX
-```
-
-API reference: [docs.multiset.ai](https://docs.multiset.ai).
+One naming rule, no exceptions: **every hyphen after `multiset` becomes a dot.**
+`multiset-unitree-go2` imports as `multiset.unitree.go2`.
 
 ## The core / adapter split
 
-The VPS half of this is not robot-specific: the API client, the pose type, the
-Y-up→Z-up conversion, the raw-vs-rectified intrinsics distinction. The transport
-half is entirely device-specific. So the family is **one core plus N adapters**,
-not N independent SDKs.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/packages-dark.svg">
+  <img src="docs/img/packages-light.svg" alt="multiset-unitree-go2 or your own camera code supply a frame; multiset-vps turns it into a pose." width="100%">
+</picture>
 
-The contract between them is one method:
+One core plus N adapters, not N independent SDKs. The contract between them is
+one method:
 
 ```python
 class FrameSource(Protocol):
@@ -111,22 +138,19 @@ multiset-python
 `multiset.*` distribution becomes unimportable with a `ModuleNotFoundError` that
 points nowhere near the cause. CI and a unit test both guard it.
 
-## Development
+## Working on this repo
 
 ```bash
-git clone https://github.com/MultiSet-AI/multiset-python
-cd multiset-python
-uv sync --all-extras                          # every package editable, one venv
-uv run python -c "import multiset.vps, multiset.unitree.go2; print('ok')"
+uv sync --all-extras     # both packages editable in one venv
 uv run pytest
 ```
-
-Python 3.10–3.12 is what CI runs. Newer works too, minus the `viz` extra:
-open3d has no wheel past 3.12, so `--all-extras` resolves without the viewer.
 
 Editing `packages/vps/src/multiset/vps/frames.py` is live in the adapter
 immediately — no version bump, no reinstall. That is the property a monorepo buys
 and separate repos charge for.
+
+Python 3.10–3.12 is what CI runs. Prerequisites, the namespace rule and the
+pre-PR checklist are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Versioning and releases
 

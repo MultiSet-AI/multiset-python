@@ -1,12 +1,41 @@
 # multiset-unitree-go2
 
-Visual positioning for the Unitree Go2: WebRTC transport, front camera, fisheye
-undistortion, and MultiSet VPS localization.
+### Ask a Unitree Go2 where it is.
 
-Part of [multiset-python](../../README.md). This package is the Go2 *adapter* —
-it owns the transport, the camera, and this robot's measured numbers. The VPS
-query, `Pose` and the frame conversions live in
+Part of [multiset-python](../../README.md). This package is the Go2 **adapter** —
+it owns the transport, the camera, and this robot's measured numbers. The
+positioning itself, the `Pose`, and the frame conversions live in
 [`multiset-vps`](../vps/README.md) and are shared with every other device.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../docs/img/go2-dark.svg">
+  <img src="../../docs/img/go2-light.svg" alt="A Unitree Go2 photographs the room over WebRTC; MultiSet VPS matches the frame against your map; the robot's position appears inside the point cloud." width="100%">
+</picture>
+
+**What it is for.** Getting a real-world position out of a Go2 without writing
+any of the awkward parts yourself.
+
+**What it does for you.** Finds the robot on your network, connects over WebRTC,
+pulls a frame from the front camera, straightens out the fisheye with this
+robot's own calibration, and localizes it against your map.
+
+**What you get back.** A `Pose` for the camera — or `dog.base_pose()` for the
+robot itself, which is usually what you want to steer on.
+
+**What you need first.** The robot's IP, its AES key (`go2-credentials` fetches
+that), your MultiSet credentials, and PortAudio installed. All covered below.
+
+### Where your code stops and ours starts
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../docs/img/go2-modules-dark.svg">
+  <img src="../../docs/img/go2-modules-light.svg" alt="Your code calls Go2; multiset-unitree-go2 finds the robot, connects over WebRTC and captures a frame; multiset-vps localizes it against the MultiSet service; a Pose comes back." width="100%">
+</picture>
+
+Two of your lines drive all of it. This package owns the robot half — finding
+it, connecting, decoding video, and this robot's measured calibration. The
+positioning half is [`multiset-vps`](../vps/README.md), shared with every other
+device.
 
 ```python
 from multiset.unitree.go2 import Go2
