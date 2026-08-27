@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]
+REPO = Path(__file__).resolve().parents[1]
 PYPROJECTS = sorted(REPO.glob("packages/*/pyproject.toml"))
 
 

@@ -67,9 +67,7 @@ multiset-vps = { workspace = true }
 
 [tool.hatch.version]
 source = "vcs"
-# root: .git is two levels up. The build runs from THIS directory, and
-# without this setuptools-scm never finds the repo -- it falls back to
-# fallback_version and the tag is silently ignored.
+# .git is two levels up; without this the tag is ignored for fallback_version.
 raw-options.root = "../.."
 raw-options.tag_regex = '^unitree-go2-dimos-v(?P<version>.+)$'
 raw-options.git_describe_command = "git describe --dirty --tags --long --match 'unitree-go2-dimos-v*'"

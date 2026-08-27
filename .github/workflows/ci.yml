@@ -26,9 +26,9 @@ jobs:
       # unparseable under python_version 3.10 and mypy dies before our code.
       - run: uv sync --all-extras --python 3.10
       - name: ruff (lint)
-        run: uv run ruff check packages
+        run: uv run ruff check packages tests
       - name: ruff (format)
-        run: uv run ruff format --check packages
+        run: uv run ruff format --check packages tests
       - name: mypy
         # The packages are typed and ship py.typed; users get the hints, so they
         # have to be right.

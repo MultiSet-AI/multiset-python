@@ -41,9 +41,7 @@ Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/v
 # tag and this package silently takes its version.
 [tool.hatch.version]
 source = "vcs"
-# root: .git is two levels up. The build runs from THIS directory, and
-# without this setuptools-scm never finds the repo -- it falls back to
-# fallback_version and the tag is silently ignored.
+# .git is two levels up; without this the tag is ignored for fallback_version.
 raw-options.root = "../.."
 raw-options.tag_regex = '^vps-v(?P<version>.+)$'
 raw-options.git_describe_command = "git describe --dirty --tags --long --match 'vps-v*'"

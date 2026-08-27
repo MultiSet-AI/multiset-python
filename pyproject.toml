@@ -30,7 +30,8 @@ warn_unused_ignores = true
 
 
 [tool.pytest.ini_options]
-testpaths = ["packages"]
+# tests/ holds repo-wide invariants that belong to no single package.
+testpaths = ["packages", "tests"]
 markers = [
   # Hardware tests need a robot or a camera on the LAN and credentials; they are
   # excluded from CI, which has neither.
