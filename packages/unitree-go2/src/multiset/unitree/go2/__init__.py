@@ -36,6 +36,7 @@ than exiting. Turn logging on with:
 from __future__ import annotations
 
 import logging
+from importlib.metadata import PackageNotFoundError, version
 
 # Re-exported so `except FrameTimeout` works whichever import you used. These
 # are the SAME classes as in multiset.vps, not parallel ones.
@@ -53,7 +54,6 @@ from multiset.vps import (
     camera_pose_to_origin,
 )
 
-from .__about__ import __version__
 from .config import Go2Settings
 from .credentials import Credentials, fetch_credentials, find_serial, save_to_env
 from .discovery import Host, find_robots, scan_subnet
@@ -74,6 +74,11 @@ from .robot import (
     compose_map_from_odom,
     localize,
 )
+
+try:
+    __version__ = version("multiset-unitree-go2")
+except PackageNotFoundError:  # running from a source tree that was never installed
+    __version__ = "0.0.0.dev0"
 
 # A library that calls basicConfig() steals the application's choice. This only
 # stops "no handler could be found" warnings.

@@ -36,11 +36,13 @@ Homepage = "https://github.com/MultiSet-AI/multiset-python"
 Issues = "https://github.com/MultiSet-AI/multiset-python/issues"
 Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/vps/CHANGELOG.md"
 
-# Version comes from the git tag, never a hand-edited constant. The --match is
-# not optional in a monorepo: without it `git describe` finds another package's
-# tag and this package silently takes its version.
+# Version comes from the git tag, never a hand-edited constant. In a monorepo
+# neither option below is optional: without root, setuptools-scm never finds
+# .git and silently uses fallback_version; without --match, `git describe`
+# finds another package's tag.
 [tool.hatch.version]
 source = "vcs"
+raw-options.root = "../.."
 raw-options.tag_regex = '^vps-v(?P<version>.+)$'
 raw-options.git_describe_command = "git describe --dirty --tags --long --match 'vps-v*'"
 raw-options.fallback_version = "0.1.0"
