@@ -1,0 +1,79 @@
+# Releases are driven entirely by tag prefix. `git tag unitree-go2-v0.2.1`
+# publishes multiset-unitree-go2 and touches nothing else.
+#
+#   vps-v0.1.0                -> packages/vps                -> multiset-vps
+#   unitree-go2-v0.1.0  -> packages/unitree-go2   -> multiset-unitree-go2
+#
+# PyPI publishing is staged behind PUBLISH_TO_PYPI: while the packages are
+# installed from git URLs this job builds and attaches artifacts to the GitHub
+# Release, and the day you publish is one variable flip, not a rewrite.
+
+name: Release
+
+on:
+  push:
+    tags: ["*-v*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write      # trusted publishing -- no API token anywhere
+      contents: write      # cut the GitHub Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # hatch-vcs needs the full tag history
+
+      - name: Resolve the package from the tag
+        id: pkg
+        run: |
+          DIR="${GITHUB_REF_NAME%%-v*}"                 # unitree-go2-v0.2.1 -> unitree-go2
+          case "$DIR" in
+            vps)         NAME=multiset-vps ;;
+            unitree-go2) NAME=multiset-unitree-go2 ;;
+            *) echo "::error::unknown tag prefix '$DIR'"; exit 1 ;;
+          esac
+          echo "dir=$DIR"   >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build --package ${{ steps.pkg.outputs.name }} --out-dir dist
+
+      - name: Version in the wheel matches the tag
+        # hatch-vcs derives the version from `git describe --match '<pkg>-v*'`.
+        # Get that --match wrong and the package silently takes ANOTHER
+        # package's version, so check rather than trust.
+        run: |
+          EXPECTED="${GITHUB_REF_NAME##*-v}"
+          BUILT=$(ls dist/*.whl | head -1 | sed -E 's/.*-([0-9][^-]*)-py3.*/\1/')
+          [ "$BUILT" = "$EXPECTED" ] || {
+            echo "::error::tag says $EXPECTED, wheel says $BUILT"; exit 1; }
+          echo "version ok: $BUILT"
+
+      - run: uvx twine check dist/*
+
+      - name: Publish to PyPI
+        if: vars.PUBLISH_TO_PYPI == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            ### Install
+
+            ```bash
+            pip install "${{ steps.pkg.outputs.name }} @ git+https://github.com/MultiSet-AI/multiset-python@${{ github.ref_name }}#subdirectory=packages/${{ steps.pkg.outputs.dir }}"
+            ```
+
+            Device packages also need the core:
+
+            ```bash
+            pip install "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps"
+            ```
+
+            See [packages/${{ steps.pkg.outputs.dir }}/CHANGELOG.md](https://github.com/MultiSet-AI/multiset-python/blob/main/packages/${{ steps.pkg.outputs.dir }}/CHANGELOG.md).

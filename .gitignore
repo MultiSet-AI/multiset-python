@@ -1,0 +1,25 @@
+# Secrets. The .env holds a MultiSet client secret and the robot's AES key.
+.env
+*.pem
+
+# Third-party robot model, fetched on demand by the viz example -- never vendored
+assets/
+*.mp4
+captures/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# uv workspace lock -- commit this once the packages are published.
+uv.lock

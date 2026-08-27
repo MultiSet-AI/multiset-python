@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multiset-vps"
+dynamic = ["version"]
+description = "MultiSet visual positioning: a rectified frame in, a pose out. Device-agnostic core of the MultiSet Python SDKs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "MultiSet AI Inc.", email = "support@multiset.ai" }]
+keywords = ["vps", "visual-positioning", "localization", "slam", "robotics", "multiset"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+  "Typing :: Typed",
+]
+
+# Deliberately small. Anything that talks to a specific camera or robot belongs
+# in a device package that depends on this one.
+dependencies = [
+  "numpy>=1.24",
+  "opencv-python>=4.10",
+  "requests>=2.31",
+]
+
+[project.urls]
+Homepage = "https://github.com/MultiSet-AI/multiset-python"
+Issues = "https://github.com/MultiSet-AI/multiset-python/issues"
+Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/vps/CHANGELOG.md"
+
+# Version comes from the git tag, never a hand-edited constant. In a monorepo
+# neither option below is optional: without root, setuptools-scm never finds
+# .git and silently uses fallback_version; without --match, `git describe`
+# finds another package's tag.
+[tool.hatch.version]
+source = "vcs"
+raw-options.root = "../.."
+raw-options.tag_regex = '^vps-v(?P<version>.+)$'
+raw-options.git_describe_command = "git describe --dirty --tags --long --match 'vps-v*'"
+raw-options.fallback_version = "0.1.0"
+
+[tool.hatch.build.targets.wheel]
+# src/multiset/ is a PEP 420 namespace directory and must NEVER contain an
+# __init__.py -- one here makes every sibling multiset.* package invisible.
+packages = ["src/multiset"]
