@@ -7,6 +7,14 @@ You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 
+UNITREE GO2 WEBRTC TRANSPORT
+===========================
+
+This package connects over WebRTC using unitree-webrtc-connect
+(https://pypi.org/project/unitree-webrtc-connect/), a community library by
+legion1581. It is a declared dependency, installed from PyPI, and not
+redistributed here. It is not affiliated with or endorsed by Unitree.
+
 UNITREE GO2 ROBOT MODEL
 =======================
 

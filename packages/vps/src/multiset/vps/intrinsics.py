@@ -130,7 +130,9 @@ class PinholeIntrinsics:
 
 
 @functools.lru_cache(maxsize=8)
-def _rectify_maps(calibration: FisheyeCalibration):
+def _rectify_maps(
+    calibration: FisheyeCalibration,
+) -> tuple[np.ndarray, np.ndarray, PinholeIntrinsics]:
     """(map1, map2, rectified intrinsics), cached per calibration.
 
     Building the maps costs milliseconds and depends on nothing but the

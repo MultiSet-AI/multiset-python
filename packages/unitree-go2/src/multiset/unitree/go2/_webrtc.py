@@ -352,7 +352,7 @@ class Go2Camera:
         if conn is None:
             raise RuntimeError("connect the transport before starting the camera")
 
-        async def reader(track) -> None:
+        async def reader(track: Any) -> None:
             from aiortc.mediastreams import MediaStreamError
 
             try:
@@ -392,7 +392,7 @@ class Go2Camera:
 
     # -- frames ------------------------------------------------------------
 
-    def _put(self, av_frame) -> None:
+    def _put(self, av_frame: Any) -> None:
         """Decode one av.VideoFrame into the cache. Runs on the loop thread."""
         # bgr24 from the decoder: the colour conversion happens in C.
         bgr = av_frame.to_ndarray(format="bgr24")

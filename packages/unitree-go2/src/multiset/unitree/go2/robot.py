@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import math
+from collections.abc import Callable
 from types import TracebackType
 
 import numpy as np
@@ -41,6 +42,9 @@ from ._webrtc import RTC_TOPIC, Go2Camera, Go2Transport, quiet_decoder_warnings
 from .config import Go2Settings
 
 log = logging.getLogger(__name__)
+
+#: (x, y, yaw_rad) -- a planar pose, in whichever frame the caller is holding.
+OdomPose = tuple[float, float, float]
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +224,7 @@ class Go2:
 
     # -- telemetry ---------------------------------------------------------
 
-    def subscribe_odometry(self, callback) -> object:
+    def subscribe_odometry(self, callback: Callable[[OdomPose], None]) -> object:
         """Odometry poses as (x, y, yaw_rad) in the ROBOT's own frame.
 
         Not the map frame: odometry starts wherever the robot booted. Compose it
@@ -241,7 +245,9 @@ class Go2:
         return self.transport.subscribe(RTC_TOPIC["ROBOTODOM"], on_message)
 
 
-def compose_map_from_odom(anchor_map, anchor_odom, odom_now):
+def compose_map_from_odom(
+    anchor_map: OdomPose, anchor_odom: OdomPose, odom_now: OdomPose
+) -> OdomPose:
     """Carry a map pose forward with an odometry delta. Each arg is (x, y, yaw).
 
     Kept deliberately identical to the navigator's own composition: if the

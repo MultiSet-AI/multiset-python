@@ -20,6 +20,14 @@ local cache directory. This is deliberate policy, not an implementation
 detail: it keeps third-party artwork out of this repository and out of the
 wheels. Do not vendor them.
 
+UNITREE GO2 WEBRTC TRANSPORT
+===========================
+
+The Go2 adapter connects over WebRTC using unitree-webrtc-connect
+(https://pypi.org/project/unitree-webrtc-connect/), a community library by
+legion1581. It is a declared dependency, installed from PyPI, and not
+redistributed here. It is not affiliated with or endorsed by Unitree.
+
 MULTISET VPS
 ============
 

@@ -22,4 +22,4 @@ htmlcov/
 .DS_Store
 
 # uv workspace lock -- commit this once the packages are published.
-# uv.lock
+uv.lock
