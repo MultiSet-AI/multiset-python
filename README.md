@@ -1,7 +1,13 @@
+<a href="https://multiset.ai"><img src="docs/img/multiset-logo.png" alt="MultiSet" height="56"></a>
+
 # multiset-python
 
 MultiSet visual positioning for Python. One repo, several packages: a
 device-agnostic VPS core, and one adapter per robot or camera.
+
+[Developer Platform](https://developer.multiset.ai) ·
+[Docs](https://docs.multiset.ai) ·
+[multiset.ai](https://multiset.ai)
 
 | package | `import` | what it owns |
 |---|---|---|
@@ -42,6 +48,24 @@ macOS wheel. `multiset-vps` alone needs nothing.
 
 Only need poses from frames you already have? `multiset-vps` stands alone: three
 dependencies, no robot, no renderer.
+
+## Getting credentials
+
+You need a MultiSet account and a map before any of this returns a pose.
+
+1. Sign up at the [Developer Platform](https://developer.multiset.ai)
+2. Create a map — you get a **map code** like `MAP_XXXXXXXXXX`
+3. Copy your **client ID** and **client secret**
+
+Put all three in `.env` (see [.env.example](.env.example)):
+
+```bash
+MULTISET_CLIENT_ID=...
+MULTISET_CLIENT_SECRET=...
+MULTISET_MAP_CODE=MAP_XXXXXXXXXX
+```
+
+API reference: [docs.multiset.ai](https://docs.multiset.ai).
 
 ## The core / adapter split
 

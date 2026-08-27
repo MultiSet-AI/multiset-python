@@ -107,7 +107,10 @@ go2-credentials --email you@example.com --save   # step 2: writes GO2_SN + GO2_A
 python examples/quickstart.py
 ```
 
-`GO2_IP` is the one thing you must supply yourself. Nothing is read at import
+The three `MULTISET_*` values come from the
+[Developer Platform](https://developer.multiset.ai) — sign up, create a map for
+its map code, copy your client ID and secret. `GO2_IP` is the one thing you must
+supply yourself. Nothing is read at import
 time — `.env` is a convenience, and every value can be passed explicitly:
 
 ```python

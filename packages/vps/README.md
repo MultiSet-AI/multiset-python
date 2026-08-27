@@ -30,6 +30,10 @@ Three dependencies — numpy, opencv-python, requests.
 
 ## Configure
 
+Get the three values from the [MultiSet Developer Platform](https://developer.multiset.ai):
+sign up, create a map for its **map code**, then copy your **client ID** and
+**client secret**. API reference at [docs.multiset.ai](https://docs.multiset.ai).
+
 Copy [`.env.example`](../../.env.example) to `.env` and fill in the MultiSet
 section: `MULTISET_CLIENT_ID`, `MULTISET_CLIENT_SECRET`, `MULTISET_MAP_CODE`.
 
