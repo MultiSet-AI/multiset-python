@@ -61,7 +61,11 @@ jobs:
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          # Not dist/* -- `uv build` drops a .gitignore in the output directory,
+          # and it was being attached to the release as `default.gitignore`.
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
           generate_release_notes: true
           body: |
             ### Install
