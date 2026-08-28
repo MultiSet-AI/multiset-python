@@ -25,6 +25,14 @@ robot itself, which is usually what you want to steer on.
 **What you need first.** The robot's IP, its AES key (`go2-credentials` fetches
 that), your MultiSet credentials, and PortAudio installed. All covered below.
 
+### See it working
+
+<a href="https://youtu.be/ASAuUXez41o">
+  <img src="https://img.youtube.com/vi/ASAuUXez41o/maxresdefault.jpg" alt="Fixing Unitree Go2 Localization Drift with 6DoF VPS" width="100%">
+</a>
+
+**[Fixing Unitree Go2 Localization Drift with 6DoF VPS](https://youtu.be/ASAuUXez41o)** — on YouTube.
+
 ### Where your code stops and ours starts
 
 <picture>

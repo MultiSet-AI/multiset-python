@@ -22,6 +22,14 @@ photographed actually stands.
 **client ID**, **client secret** and **map code** to hand — each package README
 shows where they go.
 
+## See it working
+
+<a href="https://youtu.be/ASAuUXez41o">
+  <img src="https://img.youtube.com/vi/ASAuUXez41o/maxresdefault.jpg" alt="Fixing Unitree Go2 Localization Drift with 6DoF VPS" width="100%">
+</a>
+
+**[Fixing Unitree Go2 Localization Drift with 6DoF VPS](https://youtu.be/ASAuUXez41o)** — on YouTube.
+
 ---
 
 # The packages
@@ -42,9 +50,6 @@ More adapters will land alongside these. The core never changes when they do.
 
 **What it is for.** Turning a picture into a position. This is the whole product
 in one function call.
-
-**What you give it.** An image, and the four numbers that describe your lens.
-Nothing else. It has never heard of robots.
 
 **What you get back.** A `Pose` — `x`, `y`, `z`, a heading, and a confidence. If
 the map does not recognise the picture, you get a `Pose` that is simply empty,
