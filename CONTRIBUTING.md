@@ -28,7 +28,7 @@ uv run python -c "import multiset.vps, multiset.unitree.go2; print('ok')"
 ## Before you open a PR
 
 ```bash
-uv run ruff check packages && uv run ruff format packages
+uv run ruff check packages tests && uv run ruff format packages tests
 uv run mypy
 uv run pytest
 ```

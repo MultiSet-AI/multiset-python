@@ -33,6 +33,7 @@ jobs:
           case "$DIR" in
             vps)         NAME=multiset-vps ;;
             unitree-go2) NAME=multiset-unitree-go2 ;;
+            insta360)    NAME=multiset-insta360 ;;
             *) echo "::error::unknown tag prefix '$DIR'"; exit 1 ;;
           esac
           echo "dir=$DIR"   >> "$GITHUB_OUTPUT"

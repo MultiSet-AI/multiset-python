@@ -19,6 +19,16 @@ import numpy as np
 from .intrinsics import PinholeIntrinsics
 
 
+class Panorama(NamedTuple):
+    """One 2:1 equirectangular image. No intrinsics -- that is the point.
+
+    The projection is described by the image's own dimensions, so no focal
+    lengths are sent, and the 1280 px pinhole cap does not apply.
+    """
+
+    image: np.ndarray
+
+
 class Frame(NamedTuple):
     """A rectified image and the intrinsics describing THAT image.
 
@@ -42,4 +52,16 @@ class FrameSource(Protocol):
         ...
 
 
-__all__ = ["Frame", "FrameSource"]
+@runtime_checkable
+class PanoramaSource(Protocol):
+    """A 360 camera. One method, like FrameSource, but no intrinsics."""
+
+    def capture_panorama(self) -> Panorama:
+        """One 2:1 equirectangular frame.
+
+        May block. Raises CameraError, or FrameTimeout, when no frame arrives.
+        """
+        ...
+
+
+__all__ = ["Frame", "FrameSource", "Panorama", "PanoramaSource"]

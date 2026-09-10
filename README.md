@@ -38,6 +38,7 @@ shows where they go.
 |---|---|---|---|
 | **1** | [the core](packages/vps/README.md) | `multiset-vps` | `multiset.vps` |
 | **2** | [Unitree Go2](packages/unitree-go2/README.md) | `multiset-unitree-go2` | `multiset.unitree.go2` |
+| **3** | [Insta360 360 cameras](packages/insta360/README.md) | `multiset-insta360` | `multiset.insta360` |
 
 More adapters will land alongside these. The core never changes when they do.
 
@@ -100,6 +101,32 @@ Builds on the core.
 **Everything else — installing it, finding the robot, the AES key, the seven
 steps and the things that will cost you an afternoon — is in
 [packages/unitree-go2/README.md](packages/unitree-go2/README.md).**
+
+## 3 · `multiset-insta360` — for Insta360 360 cameras
+
+**What it is for.** Localizing with a 360 camera instead of a normal one. One
+panorama sees the whole room, so there is no aiming and **nothing to
+calibrate** — an equirectangular frame is described by its own shape, so the
+service needs no lens numbers at all.
+
+**What it does for you.** Finds the camera, checks it really is in 360 mode,
+pulls stitched equirect frames, and chains the search hints so each fix makes
+the next one faster.
+
+**Where the camera is does not matter.** On your laptop over USB, or plugged
+into a robot and read over SSH — same class shape, one line different, and
+nothing is installed on the robot.
+
+```python
+from multiset.insta360 import SSHCamera
+from multiset.vps import localize
+
+with SSHCamera("unitree@192.168.123.18") as cam:
+    pose = localize(cam)          # sent as an equirect query, no intrinsics
+```
+
+**Everything else — webcam mode, the robot setup, hint chaining and the cold
+start — is in [packages/insta360/README.md](packages/insta360/README.md).**
 
 ---
 

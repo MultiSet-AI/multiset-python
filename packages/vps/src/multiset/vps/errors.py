@@ -34,7 +34,15 @@ class FrameTimeout(CameraError):
 
 
 class VPSError(MultisetError):
-    """The MultiSet VPS request failed."""
+    """The MultiSet VPS request failed.
+
+    `status` is the HTTP status when there was one, so a 5xx worth retrying is
+    distinguishable from a 400 that never will be.
+    """
+
+    def __init__(self, *args: object, status: int | None = None) -> None:
+        super().__init__(*args)
+        self.status = status
 
 
 class VPSAuthError(VPSError):

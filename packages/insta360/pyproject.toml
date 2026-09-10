@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multiset-insta360"
+dynamic = ["version"]
+description = "MultiSet VPS for Insta360 X-series cameras: webcam mode, equirect capture, on a desk or on a robot."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "MultiSet AI Inc.", email = "support@multiset.ai" }]
+keywords = ["insta360", "360", "equirectangular", "vps", "localization", "multiset"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+  "Typing :: Typed",
+]
+
+# The camera is a standard UVC device in webcam mode, so there is no vendor SDK
+# here -- opencv reads it directly. Nothing beyond the core and opencv.
+dependencies = [
+  # >=0.1.1, not >=0.1: the equirect query, Panorama and PanoramaSource landed in
+  # 0.1.1, and 0.1.0 would resolve and then fail at import.
+  "multiset-vps>=0.1.1,<0.2",
+  "numpy>=1.24",
+  "opencv-python>=4.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/MultiSet-AI/multiset-python"
+Issues = "https://github.com/MultiSet-AI/multiset-python/issues"
+Changelog = "https://github.com/MultiSet-AI/multiset-python/blob/main/packages/insta360/CHANGELOG.md"
+
+[tool.uv.sources]
+multiset-vps = { workspace = true }
+
+[tool.hatch.version]
+source = "vcs"
+raw-options.root = "../.."
+raw-options.tag_regex = '^insta360-v(?P<version>.+)$'
+raw-options.git_describe_command = "git describe --dirty --tags --long --match 'insta360-v*'"
+raw-options.fallback_version = "0.0.0"
+
+[tool.hatch.build.targets.wheel]
+# src/multiset/ is a PEP 420 namespace directory and must NEVER contain an
+# __init__.py -- one here makes every sibling multiset.* package invisible.
+packages = ["src/multiset"]

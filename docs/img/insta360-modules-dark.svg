@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 262" width="880" height="262" role="img"
+     aria-label="Your code opens the camera; multiset-insta360 finds it, checks it is in 360 mode and captures a panorama; multiset-vps localizes it against the MultiSet service; a Pose comes back.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B870F0" fill-opacity=".6"/>
+    </marker>
+  </defs>
+  <style>
+    .band  { fill:#C98CF4; fill-opacity:.07; stroke:#C98CF4; stroke-opacity:.30; stroke-width:1.3 }
+    .ours  { fill:#C98CF4; fill-opacity:.12; stroke:#C98CF4; stroke-opacity:.55; stroke-width:1.8 }
+    .chip  { fill:#C98CF4; fill-opacity:.15; stroke:#C98CF4; stroke-opacity:.55; stroke-width:1.3 }
+    .lane  { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; fill:#B870F0; fill-opacity:.75;
+             letter-spacing:.06em; text-transform:uppercase }
+    .name  { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12.5px; font-weight:600; fill:#EBDCF9 }
+    .desc  { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size:11px; fill:#B870F0; fill-opacity:.9 }
+    .yours { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; fill:#EBDCF9 }
+    .arw   { stroke:#B870F0; stroke-opacity:.6; stroke-width:1.5; fill:none }
+    .flow  { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:10px; fill:#B870F0; fill-opacity:.8 }
+  </style>
+  <text class="lane" x="12" y="26">your code</text>
+  <rect class="band" x="8" y="36" width="140" height="210" rx="10"/>
+  <text class="yours" x="78" y="92"  text-anchor="middle">X5Camera()</text>
+  <text class="yours" x="78" y="120" text-anchor="middle">localize(cam)</text>
+  <text class="yours" x="78" y="196" text-anchor="middle">if pose:</text>
+  <text class="desc"  x="78" y="214" text-anchor="middle">drive, log, draw</text>
+
+  <text class="lane" x="176" y="26">multiset-insta360 — the camera half</text>
+  <rect class="ours" x="172" y="36" width="266" height="210" rx="10"/>
+  <rect class="chip" x="186" y="52" width="238" height="46" rx="8"/>
+  <text class="name" x="305.0" y="72.0" text-anchor="middle">camera.py</text>
+  <text class="desc" x="305.0" y="89.0" text-anchor="middle">finds the camera, checks 360 mode</text>
+  <rect class="chip" x="186" y="106" width="238" height="46" rx="8"/>
+  <text class="name" x="305.0" y="126.0" text-anchor="middle">ssh_camera.py</text>
+  <text class="desc" x="305.0" y="143.0" text-anchor="middle">or the same camera, on a robot</text>
+  <rect class="chip" x="186" y="160" width="238" height="46" rx="8"/>
+  <text class="name" x="305.0" y="180.0" text-anchor="middle">localizer.py</text>
+  <text class="desc" x="305.0" y="197.0" text-anchor="middle">chains the hints, waits out cold starts</text>
+
+  <text class="lane" x="466" y="26">multiset-vps — the shared half</text>
+  <rect class="ours" x="462" y="36" width="242" height="210" rx="10"/>
+  <rect class="chip" x="476" y="78" width="214" height="46" rx="8"/>
+  <text class="name" x="583.0" y="98.0" text-anchor="middle">localize()</text>
+  <text class="desc" x="583.0" y="115.0" text-anchor="middle">one panorama, one query</text>
+  <rect class="chip" x="476" y="148" width="214" height="46" rx="8"/>
+  <text class="name" x="583.0" y="168.0" text-anchor="middle">Pose</text>
+  <text class="desc" x="583.0" y="185.0" text-anchor="middle">x  y  yaw_deg  confidence</text>
+
+  <text class="lane" x="732" y="26">MultiSet</text>
+  <rect class="band" x="728" y="36" width="144" height="210" rx="10"/>
+  <text class="yours" x="800" y="96"  text-anchor="middle">your map</text>
+  <text class="desc"  x="800" y="114" text-anchor="middle">VPS service</text>
+
+  <path class="arw" d="M 148 100 H 168" marker-end="url(#ar)"/>
+  <path class="arw" d="M 438 132 H 458" marker-end="url(#ar)"/>
+  <text class="flow" x="448" y="124" text-anchor="middle">Panorama</text>
+  <path class="arw" d="M 704 100 H 724" marker-end="url(#ar)"/>
+  <path class="arw" d="M 728 170 H 708" marker-end="url(#ar)"/>
+  <path class="arw" d="M 690 228 H 152" marker-end="url(#ar)"/>
+  <text class="flow" x="420" y="222" text-anchor="middle">Pose, back to you</text>
+</svg>

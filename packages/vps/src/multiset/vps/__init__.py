@@ -25,7 +25,14 @@ from __future__ import annotations
 import logging
 from importlib.metadata import PackageNotFoundError, version
 
-from .client import MAX_IMAGE_DIM, VPSClient
+from .client import (
+    EQUIRECT_JPEG_BUDGET,
+    MAX_EQUIRECT_WIDTH,
+    MAX_IMAGE_DIM,
+    VPSClient,
+    encode_equirect,
+    pose_to_hint,
+)
 from .errors import (
     CalibrationError,
     CameraError,
@@ -50,10 +57,10 @@ from .intrinsics import (
     intrinsics,
     undistort,
 )
-from .localize import localize, localize_image
+from .localize import localize, localize_image, localize_panorama
 from .pose import Pose
 from .settings import DEFAULT_API_BASE, VPSSettings, find_env_file, parse_env_file
-from .sources import Frame, FrameSource
+from .sources import Frame, FrameSource, Panorama, PanoramaSource
 
 try:
     __version__ = version("multiset-vps")
@@ -66,7 +73,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 __all__ = [
     "CAM_TO_OPTICAL",
     "DEFAULT_API_BASE",
+    "EQUIRECT_JPEG_BUDGET",
     "HANDHELD",
+    "MAX_EQUIRECT_WIDTH",
     "MAX_IMAGE_DIM",
     "YUP_TO_ZUP",
     "CalibrationError",
@@ -78,6 +87,8 @@ __all__ = [
     "FrameTimeout",
     "Mount",
     "MultisetError",
+    "Panorama",
+    "PanoramaSource",
     "PinholeIntrinsics",
     "Pose",
     "Rectifier",
@@ -87,11 +98,14 @@ __all__ = [
     "VPSSettings",
     "__version__",
     "camera_pose_to_origin",
+    "encode_equirect",
     "find_env_file",
     "intrinsics",
     "localize",
     "localize_image",
+    "localize_panorama",
     "parse_env_file",
+    "pose_to_hint",
     "quaternion_matrix",
     "undistort",
 ]

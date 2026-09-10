@@ -28,16 +28,23 @@ import cv2
 import numpy as np
 import requests
 
-from .errors import VPSAuthError, VPSError
+from .errors import CalibrationError, VPSAuthError, VPSError
 from .intrinsics import PinholeIntrinsics
 from .pose import Pose
 from .settings import VPSSettings
 
 log = logging.getLogger(__name__)
 
-# The API caps query images at 1280 px on the longest side. Downscaling must
-# scale the intrinsics with the image or every bearing is wrong.
+# The API caps PINHOLE query images at 1280 px on the longest side. Downscaling
+# must scale the intrinsics with the image or every bearing is wrong.
 MAX_IMAGE_DIM = 1280
+
+# Equirect is NOT capped at 1280: the service takes 4096x2048, and a panorama
+# squeezed to 1280x640 loses what the solver needs. Verified against the API.
+MAX_EQUIRECT_WIDTH = 4096
+
+#: Accuracy is unchanged well above this, and smaller queries are faster.
+EQUIRECT_JPEG_BUDGET = 950_000
 
 
 class VPSClient:
@@ -116,7 +123,8 @@ class VPSClient:
             failed = exc.response
             if failed is not None and failed.text:
                 detail = f": {failed.text[:300]}"
-            raise VPSError(f"{method} {path} failed: {exc}{detail}") from exc
+            status = failed.status_code if failed is not None else None
+            raise VPSError(f"{method} {path} failed: {exc}{detail}", status=status) from exc
         try:
             return response.json()
         except ValueError as exc:
@@ -255,5 +263,129 @@ class VPSClient:
         log.debug("vps: %s", pose)
         return pose
 
+    def localize_panorama(
+        self,
+        image: np.ndarray,
+        *,
+        map_code: str | None = None,
+        map_ids: list[str] | None = None,
+        query_mode: str | None = None,
+        hint_position: tuple[float, float, float] | None = None,
+        hint_radius: float | None = None,
+        is_right_handed: bool = True,
+        timeout: float | None = None,
+        attempts: int = 1,
+        retry_wait: float = 15.0,
+    ) -> Pose:
+        """Localize one 2:1 equirectangular frame -- a 360 camera's whole view.
 
-__all__ = ["MAX_IMAGE_DIM", "VPSClient"]
+        No intrinsics: the projection is described by the image's own shape.
+        The server renders perspective views from it and solves them as a rig,
+        which is why a partial match says "the rig could not be localized".
+
+        Downscaled to 4096 px wide, not the 1280 px pinhole cap.
+
+        Chain hints with `pose_to_hint()` -- the hint frame is not the frame a
+        pose comes back in. `attempts` > 1 retries a 5xx, which is how a waking
+        query GPU reports itself.
+        """
+        if not isinstance(image, np.ndarray):
+            raise TypeError(
+                f"localize_panorama() takes an equirectangular image as a numpy "
+                f"array, got {type(image).__name__}."
+            )
+        height, width = image.shape[:2]
+        if height == 0 or abs(width / height - 2.0) > 0.1:
+            raise CalibrationError(
+                f"an equirectangular frame is 2:1; this one is {width}x{height}. "
+                f"On an Insta360 in webcam mode, that usually means the camera is "
+                f"not in 360 view."
+            )
+
+        jpeg = encode_equirect(image)
+        resolved_map = self.settings.require_map(map_code, map_ids)
+        form: dict[str, Any] = {
+            **{key: (None, value) for key, value in resolved_map.items()},
+            "imageType": (None, "equirect"),  # makes the server ignore intrinsics
+            "isRightHanded": (None, "true" if is_right_handed else "false"),
+            "queryImage": ("query.jpg", jpeg, "image/jpeg"),
+            **self._hint_fields(hint_position, hint_radius),
+        }
+        mode = query_mode or self.settings.query_mode
+        if mode:
+            form["queryMode"] = (None, mode)
+
+        last: VPSError | None = None
+        for attempt in range(1, max(1, attempts) + 1):
+            try:
+                data = self._request("POST", "/vps/map/query-form", files=form, timeout=timeout)
+            except VPSError as exc:
+                # 5xx = still waking; anything else is a real failure
+                if attempt >= attempts or not _is_server_error(exc):
+                    raise
+                last = exc
+                log.info(
+                    "vps: query instance waking (attempt %d/%d), retrying in %.0fs",
+                    attempt,
+                    attempts,
+                    retry_wait,
+                )
+                time.sleep(retry_wait)
+                continue
+            pose = Pose.from_response(data)
+            log.debug("vps: %s", pose)
+            return pose
+        raise last or VPSError("panorama query failed")
+
+
+def _is_server_error(exc: VPSError) -> bool:
+    """Whether a VPSError wraps a 5xx, i.e. the instance is waking, not broken."""
+    return exc.status is not None and 500 <= exc.status < 600
+
+
+def encode_equirect(
+    image: np.ndarray,
+    max_bytes: int = EQUIRECT_JPEG_BUDGET,
+    max_width: int = MAX_EQUIRECT_WIDTH,
+) -> bytes:
+    """A 2:1 BGR frame -> JPEG bytes sized for the query endpoint.
+
+    Steps down quality, not resolution: the solver wants pixels across the
+    whole panorama more than it wants a clean one.
+    """
+    height, width = image.shape[:2]
+    if width > max_width:
+        image = cv2.resize(image, (max_width, max_width // 2), interpolation=cv2.INTER_AREA)
+    buffer: np.ndarray | None = None
+    for quality in (85, 70, 55, 40, 30):
+        ok, buffer = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        if not ok:
+            raise VPSError("JPEG encode failed")
+        if buffer.nbytes <= max_bytes:
+            return bytes(buffer.tobytes())
+    assert buffer is not None
+    return bytes(buffer.tobytes())
+
+
+def pose_to_hint(pose: Pose | dict, is_right_handed: bool = True) -> tuple[float, float, float]:
+    """A fix -> the `hint_position` for the next query.
+
+    NOT a no-op: a pose is right-handed, hintPosition is read left-handed, so
+    X flips. Skipping this shows up only as a search that stops helping.
+    """
+    if isinstance(pose, Pose):
+        x, y, z = pose.x, pose.y, pose.z
+    else:
+        p = pose.get("position", pose)
+        x, y, z = float(p["x"]), float(p["y"]), float(p["z"])
+    return (-x, y, z) if is_right_handed else (x, y, z)
+
+
+__all__ = [
+    "EQUIRECT_JPEG_BUDGET",
+    "MAX_EQUIRECT_WIDTH",
+    "MAX_IMAGE_DIM",
+    "VPSClient",
+    "encode_equirect",
+    "pose_to_hint",
+]

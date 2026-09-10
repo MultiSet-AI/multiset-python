@@ -24,7 +24,7 @@ ignore = ["B008", "SIM108"]
 
 [tool.mypy]
 python_version = "3.10"
-packages = ["multiset.vps", "multiset.unitree.go2"]
+packages = ["multiset.vps", "multiset.unitree.go2", "multiset.insta360"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 # Both packages ship py.typed, which promises the hints are complete.
@@ -33,7 +33,8 @@ disallow_incomplete_defs = true
 
 
 [tool.pytest.ini_options]
-testpaths = ["packages"]
+# tests/ holds repo-wide invariants that belong to no single package.
+testpaths = ["packages", "tests"]
 markers = [
   # Hardware tests need a robot or a camera on the LAN and credentials; they are
   # excluded from CI, which has neither.
