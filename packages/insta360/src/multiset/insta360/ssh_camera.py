@@ -99,7 +99,11 @@ class SSHCamera:
                 f"gst-launch-1.0 is on its PATH; and `ssh {host} true` succeeds "
                 f"without a password." + (f"\nssh said: {reason}" if reason else "")
             )
-        frame = self.read()
+        try:
+            frame = self.read()
+        except CameraError:
+            self.close()  # otherwise the ssh session outlives the failure
+            raise
         frame_height, frame_width = frame.shape[:2]
         if frame_height == 0 or abs(frame_width / frame_height - 2.0) > 0.1:
             self.close()
@@ -194,7 +198,7 @@ class SSHCamera:
         deadline = time.monotonic() + _READ_TIMEOUT
         seen: set[float] = set()
         while True:
-            if not self._frames or (not self._thread.is_alive() and self._running):
+            if not self._frames:
                 raise CameraError(
                     f"the video stream from {self.host} ended. {self.failure_reason()}".strip()
                 )
@@ -212,6 +216,12 @@ class SSHCamera:
                     self._dropped += 1
                     continue
                 return frame
+            # nothing usable in hand: only worth waiting if more are coming
+            if not self._thread.is_alive():
+                raise CameraError(
+                    f"the video stream from {self.host} ended, and no frame in it "
+                    f"was usable. {self.failure_reason()}".strip()
+                )
             if time.monotonic() > deadline:
                 raise CameraError(
                     f"every frame from {self.host} in the last {_READ_TIMEOUT:.0f}s "

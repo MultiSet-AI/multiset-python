@@ -139,3 +139,29 @@ def test_a_stalled_stream_is_refused_rather_than_served_stale():
     with pytest.raises(CameraError, match="stalled"):
         cam.read()
     cam.close()
+
+
+def test_frames_already_in_hand_survive_the_stream_ending():
+    """A finite producer is the test case; a dropped SSH session is the real one.
+
+    The pump thread exiting means no MORE frames are coming, not that the ones
+    already buffered are worthless. Treating the two as the same made read()
+    fail on a frame it was holding.
+    """
+    with SSHCamera("fake@host", command=producer(frames=3)) as cam:
+        cam._thread.join(timeout=5)
+        assert not cam._thread.is_alive(), "the producer should have finished"
+        assert cam.read().shape == (320, 640, 3)
+
+
+def test_a_dead_stream_with_nothing_usable_fails_at_once():
+    """No point waiting out the damaged-frame timeout when none are coming."""
+    from multiset.vps import CameraError
+
+    with SSHCamera("fake@host", command=producer(frames=3)) as cam:
+        cam._thread.join(timeout=5)
+        cam._frames.clear()
+        started = time.monotonic()
+        with pytest.raises(CameraError, match="ended"):
+            cam.read()
+        assert time.monotonic() - started < 1.0, "should not wait for more frames"
