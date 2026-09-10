@@ -30,6 +30,7 @@ class Insta360Settings:
     height: int = 1440
     fps: int = 5
     connect_timeout: float = 25.0
+    warmup: float = 1.5
 
     @classmethod
     def from_env(

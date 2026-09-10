@@ -60,6 +60,22 @@ def _opencv_quiet() -> Iterator[None]:
 #: A request, not an assumption: UVC negotiates, and whatever arrives is used.
 DEFAULT_WIDTH, DEFAULT_HEIGHT = 2880, 1440
 
+#: Reads discarded after asking for a resolution. The first one back is from
+#: the old mode, or empty, so judging a camera on it rejects a working one.
+_SETTLE_READS = 4
+
+
+def _settled_frame(capture: cv2.VideoCapture, width: int, height: int) -> np.ndarray | None:
+    """Ask for a resolution and return a frame actually taken at it."""
+    capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    frame = None
+    for _ in range(_SETTLE_READS):
+        ok, latest = capture.read()
+        if ok and latest is not None:
+            frame = latest
+    return frame
+
 
 class UsbCamera:
     """Live equirectangular frames from an Insta360 on this machine's USB.
@@ -82,10 +98,8 @@ class UsbCamera:
             raise CameraNotFound
         self.device = resolved
         self.capture_device = cv2.VideoCapture(resolved)
-        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        ok, frame = self.capture_device.read()
-        if not ok or frame is None:
+        frame = _settled_frame(self.capture_device, width, height)
+        if frame is None:
             self.close()
             raise CameraError(
                 f"device {resolved} opened but produced no frames. If the camera "
@@ -99,8 +113,12 @@ class UsbCamera:
         log.info("insta360: %s delivering %dx%d equirect", resolved, *self.resolution)
 
     @staticmethod
-    def _discover() -> int | str | None:
+    def _discover(width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT) -> int | str | None:
         """An Insta360 by name, else the first 2:1 device.
+
+        Probes at the panoramic resolution, not the default one: an X5 offers
+        both 1920x1080 and 2880x1440, and only the second is equirect, so a
+        probe that never asks sees a 16:9 device and walks past the camera.
 
         Never probes blindly: OpenCV warns loudly per miss, which buries the
         one message that matters.
@@ -125,10 +143,10 @@ class UsbCamera:
             for candidate in candidates:
                 probe = cv2.VideoCapture(candidate)
                 try:
-                    ok, frame = probe.read()
+                    frame = _settled_frame(probe, width, height)
                 finally:
                     probe.release()
-                if ok and frame is not None and frame.shape[0]:
+                if frame is not None and frame.shape[0]:
                     frame_height, frame_width = frame.shape[:2]
                     if abs(frame_width / frame_height - 2.0) < 0.1:
                         return candidate
