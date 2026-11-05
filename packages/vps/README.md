@@ -16,7 +16,9 @@ with MultiSet, and you want to know where it was taken from.
 
 **What you give it.** The image, plus the four numbers that describe your lens
 (`fx`, `fy`, `px`, `py`). If your lens is a fisheye, this package will
-straighten the picture first and work out the corrected numbers for you.
+straighten the picture first and work out the corrected numbers for you. A 360
+panorama needs no lens numbers at all — see
+[localizing a 360 panorama](#localizing-a-360-panorama).
 
 **What you get back.** A `Pose`: `x`, `y`, `z`, a heading in degrees, and a
 confidence. A picture the map cannot place is a normal answer — the `Pose` comes
@@ -46,7 +48,7 @@ Three steps. About five minutes.
 ## 1 · Install it
 
 ```bash
-pip install "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps"
+pip install "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.1#subdirectory=packages/vps"
 ```
 
 Nothing else to install first — numpy, opencv-python and requests come with it.
@@ -133,6 +135,58 @@ from multiset.vps import VPSClient, localize
 client = VPSClient()
 while True:
     pose = localize(my_camera, client=client)
+```
+
+## Localizing a 360 panorama
+
+An equirectangular panorama — the 2:1 image a 360 camera produces — localizes
+with **no lens numbers**. Its projection is fixed by its shape, so there is
+nothing to calibrate.
+
+```python
+import cv2
+from multiset.vps import localize_panorama
+
+pose = localize_panorama(cv2.imread("panorama.jpg"), attempts=8)
+```
+
+| | |
+|---|---|
+| Shape | 2:1 (width ÷ height between 1.9 and 2.1) |
+| Width | at least 2048 px; anything over 4096 px is downscaled to 4096 before upload |
+| Lens numbers | none |
+| Heading | measured from the centre column of the panorama |
+
+Anything else raises `CalibrationError` before the image is uploaded.
+
+`attempts=` retries a 5xx, which is how the service reports a query server still
+starting up. The first query after a quiet spell can take a couple of minutes.
+
+**Chaining fixes.** To use one fix as the search hint for the next query, pass
+it through `pose_to_hint()` — the hint is read in a frame where X is flipped, so
+the raw position quietly stops helping:
+
+```python
+from multiset.vps import VPSClient, pose_to_hint
+
+client = VPSClient()
+hint = None
+for image in panoramas:
+    pose = client.localize_panorama(image, hint_position=hint, hint_radius=15, attempts=8)
+    hint = pose_to_hint(pose) if pose else None
+```
+
+A camera can plug in the same way as a pinhole one: give it a
+`capture_panorama()` method returning a `Panorama`, and `localize()` sends it as
+an equirect query. [`multiset-insta360`](../insta360/README.md) does exactly
+that for Insta360 X-series cameras.
+
+There is a runnable version in
+[`examples/02_localize_a_panorama.py`](examples/02_localize_a_panorama.py). Give
+it several images and it chains the hints for you:
+
+```bash
+python examples/02_localize_a_panorama.py walk/*.jpg
 ```
 
 ## Straightening a fisheye

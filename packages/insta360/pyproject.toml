@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "multiset-insta360"
 dynamic = ["version"]
-description = "MultiSet VPS for Insta360 X-series cameras: webcam mode, equirect capture, on a desk or on a robot."
+description = "MultiSet VPS for Insta360 X-series cameras: localize from a USB 360 camera in webcam mode."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"

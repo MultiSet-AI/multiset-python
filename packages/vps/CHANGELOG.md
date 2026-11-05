@@ -26,12 +26,20 @@ frozen at `1.0.0`.
 - `encode_equirect()`, `MAX_EQUIRECT_WIDTH`, `EQUIRECT_JPEG_BUDGET`. Equirect
   queries are **not** subject to the 1280 px pinhole cap — the service accepts
   up to 4096x2048, and a panorama shrunk to 1280x640 loses what the solver
-  needs.
+  needs. Panoramas narrower than `MIN_EQUIRECT_WIDTH` (2048 px) are refused
+  with `CalibrationError` before upload, since the service rejects them.
 - `attempts=` on the panorama query retries a 5xx, which is how the service
   reports a query instance still waking from idle. The first fix after a long
   pause can take a couple of minutes.
 - `VPSError.status` carries the HTTP status, so a caller can tell a 5xx worth
   retrying from a 400 that never will be.
+
+### Fixed
+
+- Rejected credentials now say so, naming `MULTISET_CLIENT_ID`,
+  `MULTISET_CLIENT_SECRET` and `MULTISET_API_BASE`. The service answers a wrong
+  secret with HTTP 404, which was reported as "could not reach the MultiSet
+  token endpoint".
 
 ## [0.1.0] - 2026-08-26
 

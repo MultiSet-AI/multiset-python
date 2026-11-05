@@ -13,14 +13,6 @@ here either.
         if pose:
             print(pose.x, pose.y, pose.yaw_deg, pose.confidence)
 
-Camera plugged into a robot instead? Swap one class. Everything still runs on
-your machine, and the robot needs nothing installed:
-
-    from multiset.insta360 import SSHCamera
-
-    with SSHCamera("unitree@192.168.123.18") as cam:
-        pose = localize(cam)
-
 For a loop, `Localizer` chains the hints so each fix speeds up the next.
 
 This package logs, it does not print, and it raises Insta360Error subclasses
@@ -51,10 +43,8 @@ from multiset.vps import (
 )
 
 from .camera import DEFAULT_HEIGHT, DEFAULT_WIDTH, UsbCamera
-from .config import Insta360Settings
-from .errors import CameraNotFound, Insta360Error, NotPanoramic, RemoteCameraError
+from .errors import CameraNotFound, Insta360Error, NotPanoramic
 from .localizer import DEFAULT_HINT_RADIUS, Localizer
-from .ssh_camera import SSHCamera
 
 try:
     __version__ = version("multiset-insta360")
@@ -73,15 +63,12 @@ __all__ = [
     "CameraNotFound",
     "ConfigError",
     "Insta360Error",
-    "Insta360Settings",
     "Localizer",
     "MultisetError",
     "NotPanoramic",
     "Panorama",
     "PanoramaSource",
     "Pose",
-    "RemoteCameraError",
-    "SSHCamera",
     "VPSAuthError",
     "VPSError",
     "UsbCamera",

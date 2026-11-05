@@ -2,7 +2,7 @@
 """Keep localizing, printing each fix. The hints chain, so it speeds up.
 
 python examples/localize_loop.py --count 10
-python examples/localize_loop.py --ssh unitree@192.168.123.18
+python examples/localize_loop.py --device 1 --interval 5
 """
 
 from __future__ import annotations
@@ -10,13 +10,13 @@ from __future__ import annotations
 import argparse
 import logging
 
-from multiset.insta360 import Insta360Error, Localizer, SSHCamera, UsbCamera
+from multiset.insta360 import Insta360Error, Localizer, UsbCamera
 from multiset.vps import MultisetError
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ssh", metavar="USER@HOST", help="camera on a robot")
+    parser.add_argument("--device", help="camera index or /dev/videoN; default: auto-detect")
     parser.add_argument("--map", metavar="MAP_CODE")
     parser.add_argument("--interval", type=float, default=2.0)
     parser.add_argument("--count", type=int, default=0, help="0 = until Ctrl-C")
@@ -28,7 +28,8 @@ def main() -> int:
     )
 
     try:
-        camera = SSHCamera(args.ssh) if args.ssh else UsbCamera()
+        device = int(args.device) if args.device and args.device.isdigit() else args.device
+        camera = UsbCamera(device)
     except Insta360Error as exc:
         print(f"camera: {exc}")
         return 1

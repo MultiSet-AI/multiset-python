@@ -43,6 +43,8 @@ MAX_IMAGE_DIM = 1280
 # squeezed to 1280x640 loses what the solver needs. Verified against the API.
 MAX_EQUIRECT_WIDTH = 4096
 
+MIN_EQUIRECT_WIDTH = 2048
+
 #: Accuracy is unchanged well above this, and smaller queries are faster.
 EQUIRECT_JPEG_BUDGET = 950_000
 
@@ -90,6 +92,21 @@ class VPSClient:
                 timeout=15,
             )
             response.raise_for_status()
+        except requests.HTTPError as exc:
+            failed = exc.response
+            status = failed.status_code if failed is not None else None
+            if status is not None and 400 <= status < 500:
+                detail = _error_message(failed)
+                raise VPSAuthError(
+                    f"MultiSet rejected these credentials (HTTP {status}"
+                    f"{': ' + detail if detail else ''}). Check MULTISET_CLIENT_ID and "
+                    f"MULTISET_CLIENT_SECRET, and that MULTISET_API_BASE points at the "
+                    f"environment they were issued for.",
+                    status=status,
+                ) from exc
+            raise VPSAuthError(
+                f"could not reach the MultiSet token endpoint: {exc}", status=status
+            ) from exc
         except requests.RequestException as exc:
             raise VPSAuthError(f"could not reach the MultiSet token endpoint: {exc}") from exc
         data = response.json()
@@ -301,6 +318,12 @@ class VPSClient:
                 f"On an Insta360 in webcam mode, that usually means the camera is "
                 f"not in 360 view."
             )
+        if width < MIN_EQUIRECT_WIDTH:
+            raise CalibrationError(
+                f"an equirectangular frame must be at least {MIN_EQUIRECT_WIDTH} px wide; "
+                f"this one is {width}x{height}. Upscaling adds no detail -- capture at a "
+                f"higher resolution."
+            )
 
         jpeg = encode_equirect(image)
         resolved_map = self.settings.require_map(map_code, map_ids)
@@ -336,6 +359,16 @@ class VPSClient:
             log.debug("vps: %s", pose)
             return pose
         raise last or VPSError("panorama query failed")
+
+
+def _error_message(response: requests.Response) -> str:
+    try:
+        body = response.json()
+    except ValueError:
+        return response.text[:200].strip()
+    if isinstance(body, dict):
+        return str(body.get("message") or body.get("error") or "")
+    return ""
 
 
 def _is_server_error(exc: VPSError) -> bool:
@@ -385,6 +418,7 @@ __all__ = [
     "EQUIRECT_JPEG_BUDGET",
     "MAX_EQUIRECT_WIDTH",
     "MAX_IMAGE_DIM",
+    "MIN_EQUIRECT_WIDTH",
     "VPSClient",
     "encode_equirect",
     "pose_to_hint",

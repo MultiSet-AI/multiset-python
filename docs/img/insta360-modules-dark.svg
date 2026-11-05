@@ -19,22 +19,19 @@
   </style>
   <text class="lane" x="12" y="26">your code</text>
   <rect class="band" x="8" y="36" width="140" height="210" rx="10"/>
-  <text class="yours" x="78" y="92"  text-anchor="middle">X5Camera()</text>
+  <text class="yours" x="78" y="92"  text-anchor="middle">UsbCamera()</text>
   <text class="yours" x="78" y="120" text-anchor="middle">localize(cam)</text>
   <text class="yours" x="78" y="196" text-anchor="middle">if pose:</text>
   <text class="desc"  x="78" y="214" text-anchor="middle">drive, log, draw</text>
 
   <text class="lane" x="176" y="26">multiset-insta360 — the camera half</text>
   <rect class="ours" x="172" y="36" width="266" height="210" rx="10"/>
-  <rect class="chip" x="186" y="52" width="238" height="46" rx="8"/>
-  <text class="name" x="305.0" y="72.0" text-anchor="middle">camera.py</text>
-  <text class="desc" x="305.0" y="89.0" text-anchor="middle">finds the camera, checks 360 mode</text>
-  <rect class="chip" x="186" y="106" width="238" height="46" rx="8"/>
-  <text class="name" x="305.0" y="126.0" text-anchor="middle">ssh_camera.py</text>
-  <text class="desc" x="305.0" y="143.0" text-anchor="middle">or the same camera, on a robot</text>
-  <rect class="chip" x="186" y="160" width="238" height="46" rx="8"/>
-  <text class="name" x="305.0" y="180.0" text-anchor="middle">localizer.py</text>
-  <text class="desc" x="305.0" y="197.0" text-anchor="middle">chains the hints, waits out cold starts</text>
+  <rect class="chip" x="186" y="70" width="238" height="46" rx="8"/>
+  <text class="name" x="305.0" y="90.0" text-anchor="middle">camera.py</text>
+  <text class="desc" x="305.0" y="107.0" text-anchor="middle">finds the camera, checks 360 mode</text>
+  <rect class="chip" x="186" y="140" width="238" height="46" rx="8"/>
+  <text class="name" x="305.0" y="160.0" text-anchor="middle">localizer.py</text>
+  <text class="desc" x="305.0" y="177.0" text-anchor="middle">chains the hints, waits out cold starts</text>
 
   <text class="lane" x="466" y="26">multiset-vps — the shared half</text>
   <rect class="ours" x="462" y="36" width="242" height="210" rx="10"/>

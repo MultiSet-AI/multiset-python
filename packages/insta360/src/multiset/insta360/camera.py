@@ -83,7 +83,7 @@ class UsbCamera:
         with UsbCamera() as cam:
             pose = localize(cam)
 
-    A `multiset.vps.PanoramaSource`, like `SSHCamera`. Discovery matches an
+    A `multiset.vps.PanoramaSource`. Discovery matches an
     Insta360 by name on Linux, else the first 2:1 device; `device=` skips it.
     """
 

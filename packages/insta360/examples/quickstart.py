@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """One pose from a 360 camera, then exit.
 
-    python examples/quickstart.py                      # camera on this machine
-    python examples/quickstart.py --ssh unitree@IP     # camera on the robot
+    python examples/quickstart.py                 # find the camera
+    python examples/quickstart.py --device 1      # or name it
 
 Needs MULTISET_CLIENT_ID, MULTISET_CLIENT_SECRET and MULTISET_MAP_CODE in a
 .env file (see ../../.env.example), and the camera in Webcam mode + 360 view.
@@ -13,13 +13,13 @@ from __future__ import annotations
 import argparse
 import logging
 
-from multiset.insta360 import Insta360Error, SSHCamera, UsbCamera
+from multiset.insta360 import Insta360Error, UsbCamera
 from multiset.vps import MultisetError, localize
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ssh", metavar="USER@HOST", help="camera on a robot")
+    parser.add_argument("--device", help="camera index or /dev/videoN; default: auto-detect")
     parser.add_argument("--map", metavar="MAP_CODE", help="override MULTISET_MAP_CODE")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
@@ -29,7 +29,8 @@ def main() -> int:
     )
 
     try:
-        camera = SSHCamera(args.ssh) if args.ssh else UsbCamera()
+        device = int(args.device) if args.device and args.device.isdigit() else args.device
+        camera = UsbCamera(device)
     except Insta360Error as exc:
         print(f"camera: {exc}")
         return 1

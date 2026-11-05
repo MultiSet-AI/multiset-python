@@ -19,8 +19,7 @@ class CameraNotFound(Insta360Error):
     def __init__(self) -> None:
         super().__init__(
             "no Insta360 camera found. Plug it in over USB, then pick "
-            "Webcam mode -> 360 view on the camera's own screen.\n"
-            "If it is plugged into a robot instead, use SSHCamera(host)."
+            "Webcam mode -> 360 view on the camera's own screen."
         )
 
 
@@ -35,14 +34,9 @@ class NotPanoramic(Insta360Error):
         )
 
 
-class RemoteCameraError(Insta360Error):
-    """The SSH session carrying the video failed."""
-
-
 __all__ = [
     "CameraError",
     "CameraNotFound",
     "Insta360Error",
     "NotPanoramic",
-    "RemoteCameraError",
 ]

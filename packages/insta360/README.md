@@ -3,8 +3,8 @@
 ### One 360 frame sees the whole room. Ask it where that room is.
 
 Part of [multiset-python](../../README.md). This package is the Insta360
-**adapter** — it owns getting equirectangular frames off the camera, whether it
-is on your desk or on a robot. The positioning itself, the `Pose`, and the
+**adapter** — it owns getting equirectangular frames off a 360 camera plugged
+into your computer. The positioning itself, the `Pose`, and the
 equirect query live in [`multiset-vps`](../vps/README.md).
 
 <picture>
@@ -35,18 +35,20 @@ UVC device that has already done the stitching.
 </picture>
 
 Two lines of yours drive all of it. This package owns getting a panorama off the
-camera — wherever the camera is. The positioning half is
+camera. The positioning half is
 [`multiset-vps`](../vps/README.md), shared with every other device.
 
 ## Which cameras work
 
-The X3, X4 and X5 all work — nothing here is tied to one model. What the code
-actually requires is two things:
+Tested on the **Insta360 X5**. Nothing here is tied to one model, so the X3 and
+X4 should work too, but they have not been tested. What the code actually
+requires is three things:
 
 1. the camera appears as a **standard UVC device** (an ordinary webcam), and
-2. its frames are **2:1** — meaning the camera is stitching for you.
+2. its frames are **2:1** — meaning the camera is stitching for you, and
+3. they are at least **2048 px wide**, the service's minimum for a panorama.
 
-Every X-series model satisfies both in webcam mode. Auto-discovery finds them by
+The X5 delivers 2880x1440 in webcam mode. Auto-discovery finds them by
 name on Linux, and otherwise takes the first 2:1 device it sees — so a non-
 Insta360 camera that stitches to equirect over UVC will also work if you name
 the device yourself:
@@ -87,7 +89,7 @@ because squeezing one into 1280x640 throws away what the solver needs.
 
 ```bash
 pip install \
-  "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.0#subdirectory=packages/vps" \
+  "multiset-vps @ git+https://github.com/MultiSet-AI/multiset-python@vps-v0.1.1#subdirectory=packages/vps" \
   "multiset-insta360 @ git+https://github.com/MultiSet-AI/multiset-python@insta360-v0.1.0#subdirectory=packages/insta360"
 ```
 
@@ -102,6 +104,12 @@ delivering stitched 2:1 frames (2880x1440 on the X5).
 This step is easy to miss, and single-lens mode looks like a working camera
 until the query fails. If the shape is not 2:1, this package raises
 `NotPanoramic` and says so rather than sending a frame that cannot localize.
+
+**Which lens faces forward matters for heading.** The heading in a `Pose` is
+measured from the centre of the panorama, which is the camera's active lens.
+Switch the active lens from front to rear in the camera's settings and every
+heading turns by 180°. Position is unaffected. Pick the lens that faces the way
+you count as forward, and keep it there.
 
 ## 3 · Add your credentials
 
@@ -130,56 +138,12 @@ for you — see below.
 
 ---
 
-# The camera on a robot
-
-If the Insta360 is plugged into a robot instead of your laptop, swap one class.
-Everything still runs on your machine, and **nothing is installed on the robot** —
-it needs only its stock `sshd` and the ffmpeg or GStreamer its image already
-ships. The SSH session itself carries the video.
-
-```python
-from multiset.insta360 import SSHCamera
-from multiset.vps import localize
-
-with SSHCamera("unitree@192.168.123.18") as cam:
-    pose = localize(cam)
-```
-
-Run `ssh-copy-id unitree@192.168.123.18` once beforehand — the session uses key
-auth so it never stops on a password prompt.
-
-Or put the host in `.env` and let it read itself, the same way `Go2.from_env()`
-does:
-
-```bash
-INSTA360_SSH_HOST=unitree@192.168.123.18
-# INSTA360_DEVICE=/dev/video0     # only if it is not video0
-```
-
-```python
-with SSHCamera.from_env() as cam:
-    pose = localize(cam)
-```
-
-A camera on **this** machine needs none of that — `UsbCamera()` finds it.
-
-The remote command tries four pipelines in order, best first: the camera's own
-MJPEG copied without re-encoding, then a re-encode, each with an ffmpeg and a
-GStreamer variant. Robot images differ in which they ship, and this way you do
-not have to care.
-
-**This is the Go2 combination**: an Insta360 for the 360 view, and
-[`multiset-unitree-go2`](../unitree-go2/README.md) if you also want the robot's
-own front camera, odometry, or its measured mount.
-
----
-
 # A loop that keeps answering
 
 ```python
-from multiset.insta360 import Localizer, SSHCamera
+from multiset.insta360 import Localizer, UsbCamera
 
-with SSHCamera("unitree@192.168.123.18") as cam:
+with UsbCamera() as cam:
     for pose in Localizer(cam).stream(interval=2.0):
         if pose:
             print(f"{pose.x:+.2f} {pose.y:+.2f}  conf {pose.confidence:.2f}")
@@ -212,8 +176,7 @@ you chain hints yourself, use `pose_to_hint()` and not the raw position.
 MultisetError
 ├─ Insta360Error
 │  ├─ CameraNotFound      # nothing on USB, or still on the mode prompt
-│  ├─ NotPanoramic        # delivering frames, but not 2:1 -- wrong mode
-│  └─ RemoteCameraError   # the SSH session carrying the video failed
+│  └─ NotPanoramic        # delivering frames, but not 2:1 -- wrong mode
 ├─ CameraError            # the camera stopped mid-stream
 └─ VPSError               # the query itself failed
 ```

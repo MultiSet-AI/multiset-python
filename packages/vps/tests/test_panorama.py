@@ -91,6 +91,15 @@ def test_a_frame_that_is_not_2_to_1_is_refused_before_upload():
     assert c._session.calls == [], "nothing should reach the network"
 
 
+def test_a_panorama_below_the_service_minimum_is_refused_before_upload():
+    c = client(StubResponse(FOUND))
+    with pytest.raises(CalibrationError, match="2048"):
+        c.localize_panorama(equirect(1920))
+    assert c._session.calls == []
+    c.localize_panorama(equirect(2048))
+    assert sent_form(c)["imageType"] == (None, "equirect")
+
+
 def test_hints_travel_as_csv_like_the_pinhole_path():
     c = client(StubResponse(FOUND))
     c.localize_panorama(equirect(), hint_position=(2.76, 0.81, 0.0), hint_radius=15)

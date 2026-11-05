@@ -66,6 +66,16 @@ if pose:
 
 Three dependencies, no hardware.
 
+**360 panoramas need no lens numbers.** Any 2:1 equirectangular image at least
+2048 px wide works:
+
+```python
+import cv2
+from multiset.vps import localize_panorama
+
+pose = localize_panorama(cv2.imread("panorama.jpg"), attempts=8)
+```
+
 **Everything else — installing it, configuring it, worked examples, the frame
 conventions and the full API — is in
 [packages/vps/README.md](packages/vps/README.md).**
@@ -109,24 +119,23 @@ panorama sees the whole room, so there is no aiming and **nothing to
 calibrate** — an equirectangular frame is described by its own shape, so the
 service needs no lens numbers at all.
 
-**What it does for you.** Finds the camera, checks it really is in 360 mode,
-pulls stitched equirect frames, and chains the search hints so each fix makes
-the next one faster.
-
-**Where the camera is does not matter.** On your laptop over USB, or plugged
-into a robot and read over SSH — same class shape, one line different, and
-nothing is installed on the robot.
+**What it does for you.** Finds the camera on USB, checks it really is in 360
+mode, pulls stitched equirect frames, and chains the search hints so each fix
+makes the next one faster.
 
 ```python
-from multiset.insta360 import SSHCamera
+from multiset.insta360 import UsbCamera
 from multiset.vps import localize
 
-with SSHCamera("unitree@192.168.123.18") as cam:
+with UsbCamera() as cam:
     pose = localize(cam)          # sent as an equirect query, no intrinsics
 ```
 
-**Everything else — webcam mode, the robot setup, hint chaining and the cold
-start — is in [packages/insta360/README.md](packages/insta360/README.md).**
+Already have panoramas on disk? You do not need this package —
+`multiset.vps.localize_panorama()` takes any 2:1 image.
+
+**Everything else — webcam mode, hint chaining and the cold start — is in
+[packages/insta360/README.md](packages/insta360/README.md).**
 
 ---
 

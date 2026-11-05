@@ -1,8 +1,8 @@
 """Discovery must stay quiet, and must not guess.
 
-A machine with no camera is normal -- someone testing the robot path, or who
-has not plugged it in. Probing absent devices makes OpenCV print a paragraph
-each, burying the one line that says what to do.
+A machine with no camera is normal -- someone who has not plugged it in yet.
+Probing absent devices makes OpenCV print a paragraph each, burying the one
+line that says what to do.
 """
 
 from __future__ import annotations
@@ -59,8 +59,6 @@ def test_an_empty_video4linux_means_no_camera_without_probing(monkeypatch, tmp_p
     assert UsbCamera._discover() is None
 
 
-def test_the_error_names_both_ways_out():
-    """The message must mention the robot option, on any platform."""
+def test_the_error_says_how_to_fix_it():
     error = CameraNotFound()
     assert "Webcam mode" in str(error)
-    assert "SSHCamera" in str(error)

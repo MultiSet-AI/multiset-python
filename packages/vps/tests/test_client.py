@@ -11,7 +11,7 @@ import json
 import numpy as np
 import pytest
 import requests
-from multiset.vps import ConfigError, Pose, VPSClient, VPSError, VPSSettings
+from multiset.vps import ConfigError, Pose, VPSAuthError, VPSClient, VPSError, VPSSettings
 
 AUTH = VPSSettings(client_id="id", client_secret="secret")
 WITH_MAP = VPSSettings(client_id="id", client_secret="secret", map_code="MAP_DEFAULT")
@@ -72,6 +72,43 @@ def test_client_builds_without_a_map_code():
 def test_client_still_requires_auth():
     with pytest.raises(ConfigError, match="MULTISET_CLIENT_SECRET"):
         VPSClient(VPSSettings(client_id="id"))
+
+
+class RejectingSession(StubSession):
+    def __init__(self, failure):
+        super().__init__()
+        self.failure = failure
+
+    def post(self, url, **kwargs):
+        self.calls.append(("POST", url, kwargs))
+        if isinstance(self.failure, requests.Response):
+            return StubResponse(raises=requests.HTTPError(response=self.failure))
+        raise self.failure
+
+
+def _http(status: int, body: dict) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status
+    response._content = json.dumps(body).encode()
+    return response
+
+
+def test_rejected_credentials_name_the_credentials_not_the_network():
+    """The service answers a wrong secret with 404, which reads like a bad URL."""
+    c = VPSClient(AUTH)
+    c._session = RejectingSession(_http(404, {"message": "Invalid client id or client secret"}))
+    with pytest.raises(VPSAuthError, match="MULTISET_CLIENT_SECRET") as caught:
+        c.token()
+    assert "Invalid client id or client secret" in str(caught.value)
+    assert "could not reach" not in str(caught.value)
+    assert caught.value.status == 404
+
+
+def test_an_unreachable_token_endpoint_still_says_so():
+    c = VPSClient(AUTH)
+    c._session = RejectingSession(requests.ConnectionError("connection refused"))
+    with pytest.raises(VPSAuthError, match="could not reach"):
+        c.token()
 
 
 # -- hint fields -----------------------------------------------------------
