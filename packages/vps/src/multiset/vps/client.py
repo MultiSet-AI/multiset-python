@@ -22,6 +22,7 @@ from __future__ import annotations
 import base64
 import logging
 import time
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 import cv2
@@ -47,6 +48,17 @@ MIN_EQUIRECT_WIDTH = 2048
 
 #: Accuracy is unchanged well above this, and smaller queries are faster.
 EQUIRECT_JPEG_BUDGET = 950_000
+
+
+def _client_source() -> str:
+    try:
+        release = version("multiset-vps")
+    except PackageNotFoundError:
+        release = "0.0.0"
+    return f"python-sdk-{release.split('+')[0]}"
+
+
+CLIENT_SOURCE = _client_source()
 
 
 class VPSClient:
@@ -129,7 +141,10 @@ class VPSClient:
             response = self._session.request(
                 method,
                 url,
-                headers={"Authorization": f"Bearer {self.token()}"},
+                headers={
+                    "Authorization": f"Bearer {self.token()}",
+                    "X-Client-Source": CLIENT_SOURCE,
+                },
                 timeout=self.settings.timeout if timeout is None else timeout,
                 **kwargs,
             )

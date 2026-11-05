@@ -23,6 +23,8 @@ frozen at `1.0.0`.
 - `pose_to_hint()` — turns a fix into the next query's `hint_position`. Not a
   no-op: a pose comes back right-handed while the hint is read in the map's
   left-handed frame, so X flips.
+- Every API request sends `X-Client-Source: python-sdk-<version>`, so queries
+  from this SDK show up as their own client in MultiSet's usage analytics.
 - `encode_equirect()`, `MAX_EQUIRECT_WIDTH`, `EQUIRECT_JPEG_BUDGET`. Equirect
   queries are **not** subject to the 1280 px pinhole cap — the service accepts
   up to 4096x2048, and a panorama shrunk to 1280x640 loses what the solver

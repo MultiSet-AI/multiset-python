@@ -7,6 +7,7 @@ credentials and no MultiSet account.
 from __future__ import annotations
 
 import json
+import re
 
 import numpy as np
 import pytest
@@ -239,6 +240,16 @@ def test_request_sends_the_bearer_token():
     method, url, kwargs = c._session.calls[-1]
     assert (method, url) == ("GET", "https://api.multiset.ai/v1/vps/maps")
     assert kwargs["headers"]["Authorization"] == "Bearer jwt-abc"
+
+
+def test_request_names_the_sdk_in_a_form_the_api_accepts():
+    """The API 400s an X-Client-Source outside [a-z0-9._-], and a dev build's
+    version carries a +local part."""
+    c = client(response=StubResponse({"ok": True}))
+    c._request("GET", "/vps/maps")
+    source = c._session.calls[-1][2]["headers"]["X-Client-Source"]
+    assert source.startswith("python-sdk-")
+    assert re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,63}", source), source
 
 
 def test_localize_puts_the_hints_on_the_wire():
