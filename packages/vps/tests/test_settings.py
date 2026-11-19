@@ -57,3 +57,22 @@ def test_redacted_never_leaks_a_secret():
 def test_repr_never_leaks_a_secret():
     """A VPSSettings caught in a traceback must not print the customer's key."""
     assert "supersecret" not in repr(VPSSettings(client_secret="supersecret"))
+
+
+def test_api_base_follows_the_client_id_region():
+    assert VPSSettings(client_id="32f7fbbe-9ad1-4bc9").api_base == "https://api.multiset.ai/v1"
+    assert VPSSettings(client_id="eu_32f7fbbe-9ad1-4bc9").api_base == "https://api.eu.multiset.ai/v1"
+    assert VPSSettings().api_base == "https://api.multiset.ai/v1"
+
+
+def test_explicit_api_base_beats_the_client_id_region(tmp_path, monkeypatch):
+    monkeypatch.setenv("MULTISET_CLIENT_ID", "eu_abc")
+    monkeypatch.setenv("MULTISET_API_BASE", "https://dev-api.multiset.ai/v1")
+    assert VPSSettings.from_env(tmp_path / ".env").api_base == "https://dev-api.multiset.ai/v1"
+
+
+def test_client_id_override_picks_its_region(tmp_path, monkeypatch):
+    monkeypatch.delenv("MULTISET_API_BASE", raising=False)
+    monkeypatch.setenv("MULTISET_CLIENT_ID", "us-client")
+    settings = VPSSettings.from_env(tmp_path / ".env", client_id="eu_abc")
+    assert settings.api_base == "https://api.eu.multiset.ai/v1"

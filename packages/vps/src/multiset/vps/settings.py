@@ -5,14 +5,28 @@ from __future__ import annotations
 import json
 import logging
 import os
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .errors import ConfigError
 
 log = logging.getLogger(__name__)
 
-DEFAULT_API_BASE = "https://api.multiset.ai/v1"
+REGION_API_BASES = {
+    "us": "https://api.multiset.ai/v1",
+    "eu": "https://api.eu.multiset.ai/v1",
+}
+DEFAULT_API_BASE = REGION_API_BASES["us"]
+
+
+def region_for_client_id(client_id: str | None) -> str:
+    """The data region a credential belongs to: its prefix (eu_...), else us."""
+    prefix, sep, _ = (client_id or "").partition("_")
+    return prefix if sep and prefix in REGION_API_BASES else "us"
+
+
+def api_base_for_client_id(client_id: str | None) -> str:
+    return REGION_API_BASES[region_for_client_id(client_id)]
 
 
 def parse_env_file(path: str | Path) -> dict[str, str]:
@@ -63,28 +77,34 @@ class VPSSettings:
     client_secret: str | None = field(default=None, repr=False)
     map_code: str | None = None
     query_mode: str | None = None
-    api_base: str = DEFAULT_API_BASE
+    api_base: str | None = None
     timeout: float = 90.0
+
+    def __post_init__(self) -> None:
+        if not self.api_base:
+            object.__setattr__(self, "api_base", api_base_for_client_id(self.client_id))
 
     @classmethod
     def from_env(cls, env_file: str | Path | None = None, **overrides: object) -> VPSSettings:
         """Read a .env file and the environment, then apply overrides.
 
         Precedence, lowest to highest: .env file, environment, keyword
-        arguments.
+        arguments. Without MULTISET_API_BASE the endpoint follows the
+        client id's region (eu_... -> api.eu.multiset.ai).
         """
         path = Path(env_file) if env_file else find_env_file()
         values = parse_env_file(path) if path else {}
         if path:
             log.debug("settings: read %s", path)
-        settings = cls(
-            client_id=env_value("MULTISET_CLIENT_ID", values),
-            client_secret=env_value("MULTISET_CLIENT_SECRET", values),
-            map_code=env_value("MULTISET_MAP_CODE", values),
-            query_mode=env_value("MULTISET_QUERY_MODE", values),
-            api_base=env_value("MULTISET_API_BASE", values) or DEFAULT_API_BASE,
-        )
-        return replace(settings, **overrides) if overrides else settings  # type: ignore[arg-type]
+        fields: dict[str, object] = {
+            "client_id": env_value("MULTISET_CLIENT_ID", values),
+            "client_secret": env_value("MULTISET_CLIENT_SECRET", values),
+            "map_code": env_value("MULTISET_MAP_CODE", values),
+            "query_mode": env_value("MULTISET_QUERY_MODE", values),
+            "api_base": env_value("MULTISET_API_BASE", values),
+        }
+        fields.update(overrides)
+        return cls(**fields)  # type: ignore[arg-type]
 
     def require_auth(self) -> tuple[str, str]:
         """(client_id, client_secret), or a ConfigError naming what is missing.
@@ -144,6 +164,9 @@ class VPSSettings:
 
 __all__ = [
     "DEFAULT_API_BASE",
+    "REGION_API_BASES",
+    "api_base_for_client_id",
+    "region_for_client_id",
     "VPSSettings",
     "env_value",
     "find_env_file",
